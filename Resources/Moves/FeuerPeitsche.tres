@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3 uid="uid://blbwiljvi35lu"]
+
+[ext_resource type="Script" uid="uid://cvmlovrur1i4e" path="res://Scripts/Move/MoveTemplate.gd" id="1_wqqji"]
+
+[resource]
+script = ExtResource("1_wqqji")
+MoveName = "Feuer Peitsche"
+MoveType = 2
+AttackType = 1
+Damage = 100
+Accuracy = 70
+HasQTE = true
+QTEType = 1
