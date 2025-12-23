@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3 uid="uid://ho608ih6chr0"]
+
+[ext_resource type="Script" uid="uid://cvmlovrur1i4e" path="res://Scripts/Move/MoveTemplate.gd" id="1_t2013"]
+
+[resource]
+script = ExtResource("1_t2013")
+MoveName = "Rankenhieb"
+MoveType = 5
+Damage = 30
+Contact = false
+HasQTE = true
+QTEType = 2
+IsMultiHit = true
+MaxHits = 5

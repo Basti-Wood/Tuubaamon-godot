@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3 uid="uid://b1s7qxbk4kf0j"]
+
+[ext_resource type="Script" uid="uid://cvmlovrur1i4e" path="res://Scripts/Move/MoveTemplate.gd" id="1_fugs6"]
+
+[resource]
+script = ExtResource("1_fugs6")
+MoveName = "Feuerbellen"
+MoveType = 2
+AttackType = 2
+UserAttackChange = 10
+TargetDefenseChange = -10

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="LevelUpMove" load_steps=2 format=3 uid="uid://bgmsreml2pgig"]
+
+[ext_resource type="Script" uid="uid://54icxsndp0po" path="res://Scripts/Move/LevelUpMoves.gd" id="1_mxdw1"]
+
+[resource]
+script = ExtResource("1_mxdw1")
+level = 10

@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3 uid="uid://uxlf1s5pjoy3"]
+
+[ext_resource type="Script" uid="uid://cvmlovrur1i4e" path="res://Scripts/Move/MoveTemplate.gd" id="1_daeds"]
+
+[resource]
+script = ExtResource("1_daeds")

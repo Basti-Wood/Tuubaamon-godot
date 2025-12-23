@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="MonsterData" load_steps=2 format=3 uid="uid://40fmbxm80b5o"]
+
+[ext_resource type="Script" uid="uid://ceb1nqbnp3wms" path="res://Scripts/Monster/MonsterTemplate.gd" id="1_7pcj4"]
+
+[resource]
+script = ExtResource("1_7pcj4")
+name = null
+monster_id = null
+description = null
+idle_animation = null
+attack_animation = null
+hurt_animation = null
+defeat_animation = null
+primary_type = null
+secondary_type = null
+base_hp = null
+base_attack = null
+base_defense = null
+base_special_attack = null
+base_special_defense = null
+base_speed = null
+base_exp_yield = null
+growth_rate = null
+catch_rate = null
+abilities = null
+level_up_moves = null
+evolution_level = null
+developer_notes = null

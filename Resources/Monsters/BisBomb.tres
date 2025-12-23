@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="MonsterData" load_steps=13 format=3 uid="uid://dmro6x78m44ou"]
+
+[ext_resource type="Script" uid="uid://ceb1nqbnp3wms" path="res://Scripts/Monster/MonsterTemplate.gd" id="1_1ltfp"]
+[ext_resource type="Resource" uid="uid://40fmbxm80b5o" path="res://Resources/Monsters/BisaTNT.tres" id="1_47yna"]
+[ext_resource type="Script" uid="uid://c3nd7oi4a1jht" path="res://Scripts/Abilities/AbilityTemplate.gd" id="1_pl7s5"]
+[ext_resource type="Texture2D" uid="uid://daihs7hskb2e2" path="res://icon.svg" id="2_043fo"]
+[ext_resource type="Script" uid="uid://54icxsndp0po" path="res://Scripts/Move/LevelUpMoves.gd" id="3_7lg5b"]
+[ext_resource type="AudioStream" uid="uid://gbvvww3tkwv5" path="res://Assets/DEBUG/DEBUG_sound.mp3" id="3_hqu07"]
+[ext_resource type="Resource" uid="uid://cdojaml2ngmu4" path="res://Resources/Moves/scratch.tres" id="4_7lg5b"]
+[ext_resource type="Resource" uid="uid://ho608ih6chr0" path="res://Resources/Moves/VineWhip.tres" id="5_cc73n"]
+[ext_resource type="Resource" uid="uid://b1s7qxbk4kf0j" path="res://Resources/Moves/Firebark.tres" id="6_cc73n"]
+
+[sub_resource type="Resource" id="Resource_6sjub"]
+script = ExtResource("3_7lg5b")
+move = ExtResource("4_7lg5b")
+
+[sub_resource type="Resource" id="Resource_cc73n"]
+script = ExtResource("3_7lg5b")
+level = 7
+move = ExtResource("5_cc73n")
+
+[sub_resource type="Resource" id="Resource_tho07"]
+script = ExtResource("3_7lg5b")
+level = 10
+move = ExtResource("6_cc73n")
+
+[resource]
+script = ExtResource("1_1ltfp")
+name = "BisaBomb"
+monster_id = 1
+sprite = ExtResource("2_043fo")
+primary_type = 5
+secondary_type = 2
+catch_rate = 29.379
+level_up_moves = Array[ExtResource("3_7lg5b")]([SubResource("Resource_6sjub"), SubResource("Resource_cc73n"), SubResource("Resource_tho07")])
+evolves_into = ExtResource("1_47yna")
+evolution_level = 25
