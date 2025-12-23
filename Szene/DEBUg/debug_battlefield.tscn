@@ -1,0 +1,524 @@
+[gd_scene load_steps=3 format=3 uid="uid://las2voehnmi7"]
+
+[ext_resource type="Script" path="res://Scripts/DEBUG/debug_battlefield_ui.gd" id="1_ui"]
+[ext_resource type="Script" path="res://Scripts/DEBUG/debug_battle_manager.gd" id="2_manager"]
+
+[node name="DebugBattlefield" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ui")
+
+[node name="DebugBattleManager" type="Node" parent="."]
+script = ExtResource("2_manager")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.15, 0.15, 0.2, 1)
+
+[node name="SetupPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="SetupPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SetupPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="SetupPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "DEBUG BATTLEFIELD - Setup"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SetupPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="PlayerSetup" type="VBoxContainer" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="Label" type="Label" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/PlayerSetup"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "PLAYER MONSTER"
+horizontal_alignment = 1
+
+[node name="MonsterList" type="ItemList" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/PlayerSetup"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LevelLabel" type="Label" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/PlayerSetup"]
+layout_mode = 2
+text = "Level:"
+
+[node name="LevelSpin" type="SpinBox" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/PlayerSetup"]
+layout_mode = 2
+min_value = 1.0
+value = 50.0
+
+[node name="EnemySetup" type="VBoxContainer" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="Label" type="Label" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/EnemySetup"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "ENEMY MONSTER"
+horizontal_alignment = 1
+
+[node name="MonsterList" type="ItemList" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/EnemySetup"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LevelLabel" type="Label" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/EnemySetup"]
+layout_mode = 2
+text = "Level:"
+
+[node name="LevelSpin" type="SpinBox" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/EnemySetup"]
+layout_mode = 2
+min_value = 1.0
+value = 50.0
+
+[node name="MovesSetup" type="VBoxContainer" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="Label" type="Label" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/MovesSetup"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "MOVES (double-click)"
+horizontal_alignment = 1
+
+[node name="MovesList" type="ItemList" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/MovesSetup"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SelectedLabel" type="Label" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/MovesSetup"]
+layout_mode = 2
+text = "Player Moves:"
+
+[node name="PlayerMovesList" type="ItemList" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/MovesSetup"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemsSetup" type="VBoxContainer" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="Label" type="Label" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/ItemsSetup"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "ITEMS (double-click)"
+horizontal_alignment = 1
+
+[node name="ItemsList" type="ItemList" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/ItemsSetup"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SelectedLabel" type="Label" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/ItemsSetup"]
+layout_mode = 2
+text = "Player Items:"
+
+[node name="PlayerItemsList" type="ItemList" parent="SetupPanel/MarginContainer/VBoxContainer/HBoxContainer/ItemsSetup"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StartBattleBtn" type="Button" parent="SetupPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 24
+text = "START BATTLE"
+
+[node name="BattlePanel" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="BattlePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BattlePanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="BattlePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "DEBUG BATTLEFIELD"
+horizontal_alignment = 1
+
+[node name="TurnLabel" type="Label" parent="BattlePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "YOUR TURN"
+horizontal_alignment = 1
+
+[node name="BattleArea" type="HBoxContainer" parent="BattlePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 50
+
+[node name="PlayerSide" type="VBoxContainer" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/PlayerSide"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Player Monster Lv.50"
+horizontal_alignment = 1
+
+[node name="SpriteContainer" type="CenterContainer" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/PlayerSide"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Sprite" type="TextureRect" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/PlayerSide/SpriteContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HPBar" type="ProgressBar" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/PlayerSide"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="HPLabel" type="Label" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/PlayerSide"]
+layout_mode = 2
+text = "100 / 100"
+horizontal_alignment = 1
+
+[node name="VSLabel" type="Label" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "VS"
+
+[node name="EnemySide" type="VBoxContainer" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/EnemySide"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Enemy Monster Lv.50"
+horizontal_alignment = 1
+
+[node name="SpriteContainer" type="CenterContainer" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/EnemySide"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Sprite" type="TextureRect" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/EnemySide/SpriteContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HPBar" type="ProgressBar" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/EnemySide"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="HPLabel" type="Label" parent="BattlePanel/MarginContainer/VBoxContainer/BattleArea/EnemySide"]
+layout_mode = 2
+text = "100 / 100"
+horizontal_alignment = 1
+
+[node name="BattleLog" type="RichTextLabel" parent="BattlePanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+bbcode_enabled = true
+text = "Battle Log..."
+scroll_following = true
+
+[node name="ActionPanel" type="HBoxContainer" parent="BattlePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="MovesLabel" type="Label" parent="BattlePanel/MarginContainer/VBoxContainer/ActionPanel"]
+layout_mode = 2
+text = "Moves:"
+
+[node name="MovesContainer" type="HBoxContainer" parent="BattlePanel/MarginContainer/VBoxContainer/ActionPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ItemsLabel" type="Label" parent="BattlePanel/MarginContainer/VBoxContainer/ActionPanel"]
+layout_mode = 2
+text = "Items:"
+
+[node name="ItemsContainer" type="HBoxContainer" parent="BattlePanel/MarginContainer/VBoxContainer/ActionPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="QTEPanel" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(400, 200)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -100.0
+offset_right = 200.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="QTEPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="QTELabel" type="Label" parent="QTEPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "QTE: BUTTON MASH"
+horizontal_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="QTEPanel/VBoxContainer"]
+layout_mode = 2
+text = "Mash the button rapidly!"
+horizontal_alignment = 1
+
+[node name="QTEBar" type="ProgressBar" parent="QTEPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+show_percentage = false
+
+[node name="TimerLabel" type="Label" parent="QTEPanel/VBoxContainer"]
+layout_mode = 2
+text = "1.0s"
+horizontal_alignment = 1
+
+[node name="ActionButton" type="Button" parent="QTEPanel/VBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "ACTION!"
+
+[node name="ResultPanel" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(300, 200)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ResultPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="ResultLabel" type="Label" parent="ResultPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "VICTORY!"
+horizontal_alignment = 1
+
+[node name="RestartBtn" type="Button" parent="ResultPanel/VBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "RESTART"
+
+[node name="ActionMenuPanel" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(250, 200)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -125.0
+offset_top = -220.0
+offset_right = 125.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ActionMenuPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="ActionMenuPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "What will you do?"
+horizontal_alignment = 1
+
+[node name="FightBtn" type="Button" parent="ActionMenuPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "FIGHT"
+
+[node name="ItemBtn" type="Button" parent="ActionMenuPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "ITEM"
+
+[node name="RunBtn" type="Button" parent="ActionMenuPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "RUN"
+
+[node name="MovesPanel" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(300, 280)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -300.0
+offset_right = 150.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MovesPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="MovesPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Choose a Move:"
+horizontal_alignment = 1
+
+[node name="MovesContainer" type="VBoxContainer" parent="MovesPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+
+[node name="BackBtn" type="Button" parent="MovesPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "< Back"
+
+[node name="ItemsPanel" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(300, 280)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -300.0
+offset_right = 150.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ItemsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="ItemsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Choose an Item:"
+horizontal_alignment = 1
+
+[node name="ItemsContainer" type="VBoxContainer" parent="ItemsPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+
+[node name="BackBtn" type="Button" parent="ItemsPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "< Back"

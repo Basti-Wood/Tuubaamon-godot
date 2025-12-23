@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3 uid="uid://dsxvka37it8qq"]
+
+[ext_resource type="Script" uid="uid://cmme3r6bgoks7" path="res://Scripts/Item/ItemTempalte.gd" id="1_eguh6"]
+
+[resource]
+script = ExtResource("1_eguh6")
+ItemName = "Trank"
+RestoresHP = 50
