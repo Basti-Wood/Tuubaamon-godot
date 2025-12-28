@@ -147,7 +147,7 @@ func create_battle_monster(data: MonsterData, level: int = 50) -> Dictionary:
 	}
 	
 	# Add secondary type if present
-	if data.secondary_type != MonsterData.e_Type.NONE:
+	if data.secondary_type != Enums.Type.NONE:
 		monster["types"].append(data.secondary_type)
 	
 	# Set HP
@@ -282,7 +282,7 @@ func execute_player_move(move_index: int) -> void:
 	moves_updated.emit()
 	
 	# Check for QTE
-	if move.HasQTE and move.QTEType != MoveData.e_QTEType.NONE:
+	if move.HasQTE and move.QTEType != Enums.QTEType.NONE:
 		current_qte_move = move
 		_start_qte(move.QTEType, move.QTETimeWindow, move.QTEDifficulty)
 	else:
@@ -466,7 +466,7 @@ func _execute_move(attacker: Dictionary, defender: Dictionary, move: MoveData, q
 		return
 	
 	# Calculate damage
-	if move.AttackType == MoveData.e_AttackType.STATUS:
+	if move.AttackType == Enums.AttackType.STATUS:
 		_log("%s used a status move!" % attacker["name"])
 		# Handle status effects
 		if move.InflictsStatus and move.StatusEffect:
@@ -503,7 +503,7 @@ func _calculate_damage(attacker: Dictionary, defender: Dictionary, move: MoveDat
 	var attack_stat: float
 	var defense_stat: float
 	
-	if move.AttackType == MoveData.e_AttackType.PHYSICAL:
+	if move.AttackType == Enums.AttackType.PHYSICAL:
 		attack_stat = attacker["attack"]
 		defense_stat = defender["defense"]
 	else:
@@ -580,7 +580,7 @@ func _process_qte(delta: float) -> void:
 		return
 	
 	# Process HOLD type
-	if qte_type == MoveData.e_QTEType.HOLD and qte_is_holding:
+	if qte_type == Enums.QTEType.HOLD and qte_is_holding:
 		qte_hold_duration += delta
 		qte_progress = clampf(qte_hold_duration / qte_hold_required, 0.0, 1.0)
 		qte_progress_changed.emit(qte_progress)
@@ -589,7 +589,7 @@ func _process_qte(delta: float) -> void:
 			_complete_qte_with_progress()
 	
 	# Update progress for TIMED_PRESS (show timing bar)
-	if qte_type == MoveData.e_QTEType.TIMED_PRESS:
+	if qte_type == Enums.QTEType.TIMED_PRESS:
 		qte_progress = (qte_max_time - qte_time_remaining) / qte_max_time
 		qte_progress_changed.emit(qte_progress)
 
@@ -598,7 +598,7 @@ func qte_input_action() -> void:
 		return
 	
 	match qte_type:
-		MoveData.e_QTEType.BUTTON_MASH:
+		Enums.QTEType.BUTTON_MASH:
 			qte_button_mash_count += 1
 			qte_progress = clampf(float(qte_button_mash_count) / float(qte_button_mash_required), 0.0, 1.0)
 			qte_progress_changed.emit(qte_progress)
@@ -607,7 +607,7 @@ func qte_input_action() -> void:
 			if qte_button_mash_count >= qte_button_mash_required:
 				_complete_qte_with_progress()
 		
-		MoveData.e_QTEType.TIMED_PRESS:
+		Enums.QTEType.TIMED_PRESS:
 			# For timed press, pressing sets progress based on how close to center (0.5) you are
 			# Perfect timing at 50% = 1.0 progress, pressing at edges = lower progress
 			var current_position = (qte_max_time - qte_time_remaining) / qte_max_time
@@ -617,11 +617,11 @@ func qte_input_action() -> void:
 			_complete_qte_with_progress()
 
 func qte_hold_start() -> void:
-	if qte_active and qte_type == MoveData.e_QTEType.HOLD:
+	if qte_active and qte_type == Enums.QTEType.HOLD:
 		qte_is_holding = true
 
 func qte_hold_end() -> void:
-	if qte_active and qte_type == MoveData.e_QTEType.HOLD:
+	if qte_active and qte_type == Enums.QTEType.HOLD:
 		qte_is_holding = false
 		# When releasing hold, complete with current progress
 		_complete_qte_with_progress()

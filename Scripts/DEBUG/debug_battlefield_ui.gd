@@ -398,13 +398,13 @@ func _on_qte_started(qte_type: int, time_window: float) -> void:
 	qte_label.text = "QTE: %s" % type_names[qte_type]
 	
 	match qte_type:
-		MoveData.e_QTEType.BUTTON_MASH:
+		Enums.QTEType.BUTTON_MASH:
 			qte_instruction.text = "Mash the button rapidly!"
 			qte_action_btn.text = "MASH!"
-		MoveData.e_QTEType.TIMED_PRESS:
+		Enums.QTEType.TIMED_PRESS:
 			qte_instruction.text = "Press when the bar reaches the middle!"
 			qte_action_btn.text = "PRESS!"
-		MoveData.e_QTEType.HOLD:
+		Enums.QTEType.HOLD:
 			qte_instruction.text = "Hold the button!"
 			qte_action_btn.text = "HOLD"
 		_:

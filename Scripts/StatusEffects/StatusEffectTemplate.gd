@@ -10,12 +10,7 @@ class_name StatusEffect
 # =========================
 # STATUS TYPE
 # =========================
-enum e_Type {
-	PERSISTENT,   # Poison, Burn, Regeneration
-	TEMPORARY,    # Sleep, Freeze
-	INSTANT       # Confuse trigger, Flinch
-}
-@export var StatusType: e_Type = e_Type.PERSISTENT
+@export var StatusType: Enums.StatusType = Enums.StatusType.PERSISTENT
 
 # =========================
 # DURATION

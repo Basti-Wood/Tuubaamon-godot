@@ -16,23 +16,7 @@ class_name AbilityData
 # ABILITY TRIGGER TYPE
 # =========================
 
-enum e_TriggerType {
-	PASSIVE,           # Always active
-	ON_BATTLE_START,   # Triggers when entering battle
-	ON_SWITCH_IN,      # Triggers when switching in
-	ON_TAKING_DAMAGE,  # Triggers when hit
-	ON_DEALING_DAMAGE, # Triggers when attacking
-	ON_TURN_START,     # Triggers at start of turn
-	ON_TURN_END,       # Triggers at end of turn
-	ON_HP_THRESHOLD,   # Triggers when HP reaches threshold
-	ON_STATUS,         # Triggers when getting status condition
-	ON_MOVE_USED,      # Triggers when using specific move type
-	ON_WEATHER,        # Triggers in specific weather
-	ON_TERRAIN,        # Triggers on specific terrain
-	ON_FAINT,          # Triggers when fainting
-}
-
-@export var TriggerType: e_TriggerType = e_TriggerType.PASSIVE
+@export var TriggerType: Enums.TriggerType = Enums.TriggerType.PASSIVE
 
 # =========================
 # TRIGGER CONDITIONS
@@ -218,17 +202,17 @@ func should_trigger(context: Dictionary) -> bool:
 	
 	# Check specific trigger conditions
 	match TriggerType:
-		e_TriggerType.ON_HP_THRESHOLD:
+		Enums.TriggerType.ON_HP_THRESHOLD:
 			var hp_ratio = float(context.get("current_hp", 100)) / float(context.get("max_hp", 100))
 			return hp_ratio <= HPThreshold
 		
-		e_TriggerType.ON_WEATHER:
+		Enums.TriggerType.ON_WEATHER:
 			return context.get("weather", "") == TriggersInWeather
 		
-		e_TriggerType.ON_STATUS:
+		Enums.TriggerType.ON_STATUS:
 			return context.get("status", "") == TriggersOnStatus
 		
-		e_TriggerType.ON_MOVE_USED:
+		Enums.TriggerType.ON_MOVE_USED:
 			return context.get("move_type", -1) in TriggersOnMoveType
 	
 	return true

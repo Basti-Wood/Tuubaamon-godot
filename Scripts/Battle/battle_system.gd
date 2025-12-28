@@ -168,7 +168,7 @@ func execute_move(battler_data: Dictionary, move: MoveData) -> void:
 	move_selected.emit(attacker, move)
 	
 	# Check if move has QTE
-	if move.HasQTE and move.QTEType != MoveData.e_QTEType.NONE:
+	if move.HasQTE and move.QTEType != Enums.QTEType.NONE:
 		# Initiate QTE
 		qte_initiated.emit(move)
 		qte_system.start_qte(move.QTEType, move.QTETimeWindow, move.QTEDifficulty)

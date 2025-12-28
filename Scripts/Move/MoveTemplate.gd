@@ -1,52 +1,15 @@
 extends Resource
 class_name MoveData
 
-enum e_Type {
-	NONE, 
-	NORMAL, 
-	FIRE,
-	WATER, 
-	ELECTRIC, 
-	GRASS, 
-	ICE,
-	FIGHTING, 
-	POISON, 
-	GROUND, 
-	FLYING, 
-	PSYCHIC, 
-	BUG,
-	ROCK, 
-	GHOST, 
-	DRAGON, 
-	DARK, 
-	STEEL, 
-	FAIRY
-}
-
-enum e_AttackType {
-	PHYSICAL,
-	SPECIAL,
-	STATUS
-}
-
-enum e_Target {
-	ENEMY_SINGLE,
-	ENEMY_ALL,
-	ALLY_SINGLE,
-	ALLY_ALL,
-	ALL,
-	SELF
-}
-
 @export var MoveName: String
 @export_multiline var Description: String
 
-@export var MoveType: e_Type
-@export var AttackType: e_AttackType
+@export var MoveType: Enums.Type
+@export var AttackType: Enums.AttackType
 @export var Damage: int
 @export_range(0, 100) var Accuracy: int = 100
 @export var MaxPP: int = 10
-@export var Target: e_Target = e_Target.ENEMY_SINGLE
+@export var Target: Enums.Target = Enums.Target.ENEMY_SINGLE
 @export_range(-1, 1) var Priority: int = 0
 
 @export var InflictsStatus: bool = false
@@ -61,15 +24,7 @@ enum e_Target {
 @export_group("Quick Time Event")
 @export var HasQTE: bool = false
 
-enum e_QTEType {
-	NONE,           # No QTE
-	BUTTON_MASH,    # Rapidly press button
-	TIMED_PRESS,    # Press at the right moment
-	SEQUENCE,       # Press buttons in sequence
-	HOLD,           # Hold button for duration
-	RHYTHM          # Press to the beat
-}
-@export var QTEType: e_QTEType = e_QTEType.NONE
+@export var QTEType: Enums.QTEType = Enums.QTEType.NONE
 
 # QTE difficulty settings
 @export_range(0.1, 3.0) var QTETimeWindow: float = 1.0   # Time to complete QTE

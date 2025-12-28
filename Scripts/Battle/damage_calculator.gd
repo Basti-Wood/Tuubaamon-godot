@@ -48,7 +48,7 @@ static func calculate_damage(
 ) -> Dictionary:
 	
 	# STATUS moves don't deal damage
-	if move.AttackType == MoveData.e_AttackType.STATUS:
+	if move.AttackType == Enums.AttackType.STATUS:
 		return {
 			"damage": 0,
 			"is_critical": false,
@@ -72,7 +72,7 @@ static func calculate_damage(
 	var defense_stat: float
 	
 	# Determine if physical or special
-	if move.AttackType == MoveData.e_AttackType.PHYSICAL:
+	if move.AttackType == Enums.AttackType.PHYSICAL:
 		attack_stat = attacker_data.get("attack", 50)
 		defense_stat = defender_data.get("defense", 50)
 	else:  # SPECIAL
@@ -272,14 +272,14 @@ static func check_flinch(move: MoveData) -> bool:
 static func get_weather_modifier(weather: String, move_type: int) -> float:
 	match weather:
 		"sunny":
-			if move_type == MoveData.e_Type.FIRE:
+			if move_type == Enums.Type.FIRE:
 				return 1.5
-			elif move_type == MoveData.e_Type.WATER:
+			elif move_type == Enums.Type.WATER:
 				return 0.5
 		"rain":
-			if move_type == MoveData.e_Type.WATER:
+			if move_type == Enums.Type.WATER:
 				return 1.5
-			elif move_type == MoveData.e_Type.FIRE:
+			elif move_type == Enums.Type.FIRE:
 				return 0.5
 		"sandstorm":
 			# Rock types get SpDef boost (handled elsewhere)

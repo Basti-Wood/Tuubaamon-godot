@@ -2,38 +2,6 @@ extends Resource
 class_name MonsterData
 
 # =========================
-# ENUMS
-# =========================
-
-enum e_Type {
-	NONE,
-	NORMAL,
-	FIRE,
-	WATER,
-	ELECTRIC,
-	GRASS,
-	ICE,
-	FIGHTING,
-	POISON,
-	GROUND,
-	FLYING,
-	PSYCHIC,
-	BUG,
-	ROCK,
-	GHOST,
-	DRAGON,
-	DARK,
-	STEEL,
-	FAIRY,
-}
-
-enum e_GrowthRate {
-	FAST,
-	MEDIUM,
-	SLOW
-}
-
-# =========================
 # IDENTITY
 # =========================
 
@@ -55,8 +23,8 @@ enum e_GrowthRate {
 # =========================
 
 # Limit to 1–2 types by convention
-@export var primary_type: e_Type = 1
-@export var secondary_type: e_Type
+@export var primary_type: Enums.Type = 1
+@export var secondary_type: Enums.Type
 
 # =========================
 # BASE STATS
@@ -75,7 +43,7 @@ enum e_GrowthRate {
 # =========================
 
 @export var base_exp_yield: int = 10
-@export var growth_rate: e_GrowthRate = e_GrowthRate.MEDIUM
+@export var growth_rate: Enums.GrowthRate = Enums.GrowthRate.MEDIUM
 @export_range(0, 100) var catch_rate: float = 100
 
 # =========================

@@ -14,31 +14,11 @@ signal qte_failed()
 signal qte_progress_updated(progress: float)
 
 # =========================
-# ENUMS
-# =========================
-
-enum QTEResult {
-	FAILURE,   # 0.0 - 0.3
-	PARTIAL,   # 0.3 - 0.8
-	SUCCESS,   # 0.8 - 1.0
-	PERFECT    # Exactly 1.0
-}
-
-enum QTEType {
-	NONE,
-	BUTTON_MASH,
-	TIMED_PRESS,
-	SEQUENCE,
-	HOLD,
-	RHYTHM
-}
-
-# =========================
 # STATE
 # =========================
 
 var is_active: bool = false
-var current_qte_type: QTEType = QTEType.NONE
+var current_qte_type: Enums.QTEType = Enums.QTEType.NONE
 var qte_time_remaining: float = 0.0
 var qte_max_time: float = 1.0
 var qte_difficulty: int = 3
@@ -86,18 +66,18 @@ func _process(delta: float) -> void:
 		return
 	
 	match current_qte_type:
-		QTEType.TIMED_PRESS:
+		Enums.QTEType.TIMED_PRESS:
 			_process_timed_press(delta)
-		QTEType.HOLD:
+		Enums.QTEType.HOLD:
 			_process_hold(delta)
-		QTEType.RHYTHM:
+		Enums.QTEType.RHYTHM:
 			_process_rhythm(delta)
 
 # =========================
 # QTE INITIATION
 # =========================
 
-func start_qte(qte_type: QTEType, time_window: float, difficulty: int) -> void:
+func start_qte(qte_type: Enums.QTEType, time_window: float, difficulty: int) -> void:
 	if is_active:
 		push_warning("QTE already active!")
 		return
@@ -123,26 +103,26 @@ func cancel_qte() -> void:
 # QTE TYPE INITIALIZATION
 # =========================
 
-func _initialize_qte_type(qte_type: QTEType, difficulty: int) -> void:
+func _initialize_qte_type(qte_type: Enums.QTEType, difficulty: int) -> void:
 	match qte_type:
-		QTEType.BUTTON_MASH:
+		Enums.QTEType.BUTTON_MASH:
 			button_mash_count = 0
 			button_mash_required = 5 + (difficulty * 3)  # 8, 11, 14, etc.
 		
-		QTEType.TIMED_PRESS:
+		Enums.QTEType.TIMED_PRESS:
 			timed_press_perfect_time = qte_max_time * 0.5
 			timed_press_tolerance = 0.2 - (difficulty * 0.02)  # Harder = smaller window
 		
-		QTEType.SEQUENCE:
+		Enums.QTEType.SEQUENCE:
 			sequence_index = 0
 			button_sequence = _generate_button_sequence(difficulty)
 		
-		QTEType.HOLD:
+		Enums.QTEType.HOLD:
 			hold_duration = 0.0
 			hold_required = qte_max_time * 0.7
 			is_holding = false
 		
-		QTEType.RHYTHM:
+		Enums.QTEType.RHYTHM:
 			rhythm_index = 0
 			rhythm_beats = _generate_rhythm_beats(difficulty, qte_max_time)
 			rhythm_tolerance = 0.2 - (difficulty * 0.02)
@@ -156,15 +136,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	
 	match current_qte_type:
-		QTEType.BUTTON_MASH:
+		Enums.QTEType.BUTTON_MASH:
 			_handle_button_mash(event)
-		QTEType.TIMED_PRESS:
+		Enums.QTEType.TIMED_PRESS:
 			_handle_timed_press(event)
-		QTEType.SEQUENCE:
+		Enums.QTEType.SEQUENCE:
 			_handle_sequence(event)
-		QTEType.HOLD:
+		Enums.QTEType.HOLD:
 			_handle_hold(event)
-		QTEType.RHYTHM:
+		Enums.QTEType.RHYTHM:
 			_handle_rhythm(event)
 
 # =========================
@@ -316,25 +296,25 @@ func _complete_qte(succeeded: bool) -> void:
 # RESULT INTERPRETATION
 # =========================
 
-func get_qte_result() -> QTEResult:
+func get_qte_result() -> Enums.QTEResult:
 	if success_level >= 1.0:
-		return QTEResult.PERFECT
+		return Enums.QTEResult.PERFECT
 	elif success_level >= 0.8:
-		return QTEResult.SUCCESS
+		return Enums.QTEResult.SUCCESS
 	elif success_level >= 0.3:
-		return QTEResult.PARTIAL
+		return Enums.QTEResult.PARTIAL
 	else:
-		return QTEResult.FAILURE
+		return Enums.QTEResult.FAILURE
 
 func get_damage_multiplier(move_data: MoveData) -> float:
 	var result = get_qte_result()
 	
 	match result:
-		QTEResult.PERFECT, QTEResult.SUCCESS:
+		Enums.QTEResult.PERFECT, Enums.QTEResult.SUCCESS:
 			return move_data.QTESuccessMultiplier
-		QTEResult.PARTIAL:
+		Enums.QTEResult.PARTIAL:
 			return move_data.QTEPartialMultiplier
-		QTEResult.FAILURE:
+		Enums.QTEResult.FAILURE:
 			return move_data.QTEFailureMultiplier
 		_:
 			return 1.0
