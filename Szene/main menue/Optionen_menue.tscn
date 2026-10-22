@@ -1,8 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://dkinq7ndmitr7"]
+[gd_scene load_steps=3 format=3 uid="uid://dkinq7ndmitr7"]
 
 [ext_resource type="Script" uid="uid://pemvd0pv1ecp" path="res://Scripts/Main menue/optionen_menue.gd" id="1_dilf6"]
+[ext_resource type="Theme" path="res://Assets/UI/main_theme.tres" id="theme_main"]
 
 [node name="OptionenMenue" type="Control"]
+theme = ExtResource("theme_main")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,6 +13,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_dilf6")
 
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.137, 0.102, 0.212, 1)
+
 [node name="Label" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 10
@@ -18,7 +29,7 @@ anchor_right = 1.0
 offset_bottom = 95.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 69
-text = "Options"
+text = "Optionen"
 horizontal_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -29,35 +40,27 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -163.0
-offset_top = -170.5
+offset_top = -120.0
 offset_right = 163.0
-offset_bottom = 170.5
+offset_bottom = 120.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Sound options" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 10
-text = "Sound Options"
+text = "Sound"
 
 [node name="Graphic options" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 10
-text = "Graphic Options"
+text = "Grafik"
 
 [node name="Control Options" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 10
-text = "Control Options"
+text = "Steuerung"
 
 [node name="Exit" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 10
-text = "Exit"
+text = "Zurück"
 
 [connection signal="pressed" from="VBoxContainer/Sound options" to="." method="_on_sound_options_pressed"]
 [connection signal="pressed" from="VBoxContainer/Graphic options" to="." method="_on_graphic_options_pressed"]
