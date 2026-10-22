@@ -24,6 +24,7 @@ Tuubaamon-godot/
 │   ├── Items/            Items
 │   ├── Monsters/         Monster-Arten
 │   ├── Moves/            Attacken
+│   ├── Puzzles/          Level für Puzzlespiel-Rätsel (Bento, Schiebe-Puzzle ...)
 │   └── StatusEffects/    Statuseffekte (Verbrennung, Gift ...)
 ├── Scripts/              GDScript-Code
 │   ├── Abilities/ Item/ Monster/ Move/ StatusEffects/   Vorlagen-Klassen für die Resources
@@ -35,6 +36,7 @@ Tuubaamon-godot/
 │   ├── Main menue/       Hauptmenü und Optionen
 │   ├── Music/            AudioPlayer (Autoload)
 │   ├── Overworld/        Spieler, Kamera, Gras, Türen, NPCs, VM-Hindernisse (Platzhalter)
+│   ├── Puzzles/          Rätsel: Basis, Zelda/, Pokemon/, Minigame/ (Platzhalter, siehe Abschnitt 12)
 │   ├── Player/           PlayerData
 │   ├── UI/               Kampf-HUD, Team, Inventar, Dialog, Pause (Platzhalter)
 │   └── ConfigManager.gd  Einstellungen speichern/laden (Autoload)
@@ -55,6 +57,7 @@ Neue Szenen bitte so ablegen (Ordner beim ersten Mal im Editor anlegen):
 | Spielerfigur, NPC-Vorlage | `Szene/Overworld/` | `Scripts/Overworld/` |
 | Kampfszene | `Szene/Battle/battle_scene.tscn` | `Scripts/Battle/battle_scene.gd` |
 | Menüs und HUD | `Szene/UI/` | `Scripts/UI/` |
+| Puzzlespiel-Fenster (Bento, Schiebe-Puzzle ...) | `Szene/Puzzles/` | `Scripts/Puzzles/Minigame/` |
 
 **Benennung:** Dateien in `snake_case` (z. B. `route_1.tscn`), Klassen in `PascalCase` (z. B. `MonsterData`). Bei alten Dateien mit anderen Namen ist das okay, die bleiben.
 
@@ -234,3 +237,55 @@ Diese Dateien enthalten nur TODOs und Pseudocode. Empfohlene Reihenfolge:
 Autoload eintragen: *Projekt → Projekteinstellungen → Globals → Autoload*, Skript auswählen, Namen vergeben (z. B. `GameState`).
 
 Mehr zum Plan steht in `docs/ROADMAP.md`, die Spielregeln in den Design-Notizen (Obsidian-Vault bzw. `design/spielmechaniken.md`).
+
+---
+
+## 12. Rätsel
+
+Alle Rätsel-Skripte liegen in `Scripts/Puzzles/` und sind noch **Platzhalter** (TODOs und Pseudocode). Es gibt drei Arten:
+
+| Art | Ordner | Was drin ist |
+|---|---|---|
+| **Zelda-Stil** (Dungeon-Räume) | `Scripts/Puzzles/Zelda/` | Bodenschalter, Kristallschalter, rote/blaue Blöcke, Schiebeblock, Tür/Brücke/Treppe, verschlossene Tür, Schlüssel, Fackel, Truhe, die beim Lösen erscheint |
+| **Pokémon-Stil** (auf dem Boden) | `Scripts/Puzzles/Pokemon/` | Stärke-Fels (braucht ein VM-Item), Loch für Felsen, Eisboden zum Rutschen, Pfeil-/Drehfelder, brüchiger Boden |
+| **Puzzlespiel** (eigenes Fenster) | `Scripts/Puzzles/Minigame/` | Bento-Rätsel (Stücke in eine Box legen), Schiebe-Puzzle, Lichter aus, dazu das Overworld-Objekt, das sie öffnet |
+
+### So hängt alles zusammen
+
+- **`PuzzleElement`** (`puzzle_element.gd`) ist die Basis fast aller Teile. Jedes Teil ist **AN** oder **AUS**. Schalter, Fackeln usw. melden, wenn sie umschalten. Türen, Brücken und Truhen hören zu: im Inspector bei `listens_to` die Schalter eintragen und bei `condition` wählen, ob **ALLE**, **EINER** oder **KEINER** an sein muss.
+- **`PuzzleManager`** (`puzzle_manager.gd`) kommt einmal pro Rätsel-Raum rein. Er weiß, wann das Rätsel gelöst ist (`goal_elements`), spielt den Lösungs-Sound, schaltet Belohnungen frei (`reward_on_solve`), speichert "gelöst" als Story-Flag in `GameState` und kann den Raum zurücksetzen.
+- **`PuzzleGrid`** (`puzzle_grid.gd`) braucht man für alles, was auf Kacheln einrastet (Blöcke, Felsen, Eis, Drehfelder). Es rechnet Weltposition in Felder um und weiß, welche Felder frei sind.
+
+### Beispiel: zwei Schalter öffnen eine Tür (Zelda-Stil)
+
+```
+Raum_3 (Node3D)
+├── PuzzleManager         puzzle_id = "wald_dungeon_raum_3", goal_elements = [Tür]
+├── PuzzleGrid            Größe des Raums
+├── Schalter_A            floor_switch.gd, needs_heavy an (nur ein Block drückt ihn)
+├── Schalter_B            floor_switch.gd
+├── Block                 pushable_block.gd, grid = PuzzleGrid
+└── Tür                   puzzle_door.gd, listens_to = [Schalter_A, Schalter_B], condition = ALLE
+```
+
+### Neues Puzzlespiel-Rätsel (z. B. Bento)
+
+1. In `Resources/Puzzles/` die Vorlage `1GridPuzzleTemplate.tres` duplizieren und ausfüllen: Größe, gesperrte Felder (Form der Box), Stücke, Sterne-Grenzen, Hinweis.
+2. Stücke sind `PuzzlePieceData`-Resources: die Form als Liste von Feldern, z. B. L-Form `(0,0) (0,1) (0,2) (1,2)`.
+3. In der Map ein Objekt mit `Scripts/Puzzles/Minigame/puzzle_terminal.gd` aufstellen (Steintafel, Tisch ...), `puzzle_scene` (z. B. `Szene/Puzzles/bento_puzzle.tscn`) und das Level zuweisen.
+4. Weil das Terminal selbst ein `PuzzleElement` ist, kann es wie ein Schalter eine Tür öffnen.
+
+Mit derselben Bento-Logik gehen auch die **zerbrochenen Steinplatten** in den Story-Ruinen und später vielleicht das **Einsetzen von Schmucksteinen**. Die Sterne (`star_moves`) sind für den optionalen **Puzzle-Dungeon mit 3 Sternen** gedacht.
+
+### Neue Rätselart bauen
+
+- **Teil in der Welt** (Hebel, Spiegel, Druckplatte ...): neues Skript mit `extends PuzzleElement`, `_apply_state()` überschreiben (wie sieht AN/AUS aus?) und `set_active()` aufrufen, wenn der Spieler etwas tut.
+- **Neues Puzzlespiel** (Sokoban, Rohre drehen, Memory ...): neues Skript mit `extends GridPuzzle`, die Funktionen unter "Von Unterklassen überschreiben" ausfüllen. Züge zählen, Rückgängig, Sterne und Schließen macht die Basis.
+
+### Was in GameState noch dazukommen muss
+
+- Story-Flags für gelöste Rätsel (`"puzzle_" + puzzle_id`) und beste Sterne.
+- Dungeon-Schlüssel getrennt vom Inventar, z. B. `dungeon_keys = {"wald_dungeon": {"small": 1, "boss": false}}` (siehe `locked_door.gd`).
+- Für Puzzlespiele zwei neue Tasten in der Input Map: `rotate` (Teil drehen) und `undo` (Rückgängig).
+
+Reihenfolge zum Fertigbauen: `puzzle_element.gd` → `puzzle_manager.gd` → `floor_switch.gd` + `puzzle_door.gd` (erstes Rätsel) → `puzzle_grid.gd` + `pushable_block.gd` → der Rest nach Bedarf. Voraussetzung ist, dass `GameState` und der Spieler aus Abschnitt 11 laufen.

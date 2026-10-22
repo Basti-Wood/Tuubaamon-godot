@@ -27,6 +27,7 @@ Stand: 2026-10-22. Die Spielregeln stehen in den Design-Notizen (Obsidian-Vault 
 | Kampfszene 2.5D (Kamera, HUD, KI, Fangen) | 🔲 Platzhalter | `Scripts/Battle/battle_scene.gd` usw., `Scripts/UI/battle_hud.gd` |
 | Menüs (Team, Inventar, Dialog, Pause) | 🔲 Platzhalter | `Scripts/UI/` |
 | Amulette (Fangen, Upgrades) | 🔲 Platzhalter | `Scripts/Item/amulet_data.gd` |
+| Rätsel (Zelda, Pokémon, Puzzlespiele) | 🔲 Platzhalter | `Scripts/Puzzles/` |
 
 ## Nächste Schritte (Reihenfolge)
 
