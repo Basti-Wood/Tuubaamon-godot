@@ -2,12 +2,12 @@ extends Node
 class_name DebugBattleManager
 
 ## Debug Battle Manager - Allows testing all resources in a controlled battle environment
+## Now delegates to QTESystem, DamageCalculator, and TypeChart for core logic
 
 # =========================
 # SIGNALS
 # =========================
 
-signal setup_completed()
 signal battle_log_updated(message: String)
 signal player_hp_changed(current: int, max_hp: int)
 signal enemy_hp_changed(current: int, max_hp: int)
@@ -16,9 +16,9 @@ signal qte_progress_changed(progress: float)
 signal qte_ended(success: bool, level: float)
 signal turn_changed(is_player_turn: bool)
 signal battle_ended(winner: String)
-signal action_menu_requested()  # New: Show Fight/Item/Run menu
-signal moves_updated()  # New: PP changed, update move buttons
-signal items_updated()  # New: Items changed (used/consumed)
+signal action_menu_requested()
+signal moves_updated()
+signal items_updated()
 
 # =========================
 # RESOURCE PATHS
@@ -47,44 +47,126 @@ var available_status_effects: Array = []
 var player_monster: Dictionary = {}
 var enemy_monster: Dictionary = {}
 var player_items: Array = []
-var player_move_pp: Dictionary = {}  # Track PP for each move: {move_index: current_pp}
-var enemy_move_pp: Dictionary = {}   # Track PP for enemy moves
+var player_move_pp: Dictionary = {}
+var enemy_move_pp: Dictionary = {}
 var is_battle_active: bool = false
 var is_player_turn: bool = true
 var current_qte_move: MoveData = null
-var current_move_index: int = -1  # Track which move is being used
+var current_move_index: int = -1
 
-# QTE System
-var qte_active: bool = false
-var qte_type: int = 0
-var qte_time_remaining: float = 0.0
-var qte_max_time: float = 1.0
-var qte_progress: float = 0.0
-var qte_difficulty: int = 3
-var qte_button_mash_count: int = 0
-var qte_button_mash_required: int = 10
-var qte_hold_duration: float = 0.0
-var qte_hold_required: float = 1.0
-var qte_is_holding: bool = false
+# =========================
+# CORE SYSTEM REFERENCES
+# =========================
+
+var qte_system: QTESystem = null
+var damage_calculator = DamageCalculator
+
+# Public QTE state (exposed for UI binding)
+var qte_active: bool = false:
+	get: return qte_system and qte_system.is_active
+var qte_time_remaining: float = 0.0:
+	get: return qte_system.qte_time_remaining if qte_system else 0.0
 
 # =========================
 # INITIALIZATION
 # =========================
 
 func _ready() -> void:
+	# Create QTE system
+	qte_system = QTESystem.new()
+	qte_system.name = "QTESystem"
+	add_child(qte_system)
+	
+	# Connect QTE signals
+	qte_system.qte_started.connect(_on_qte_internal_started)
+	qte_system.qte_completed.connect(_on_qte_internal_completed)
+	qte_system.qte_failed.connect(_on_qte_internal_failed)
+	qte_system.qte_progress_updated.connect(_on_qte_internal_progress)
+	
 	load_all_resources()
 
-func _process(delta: float) -> void:
-	if qte_active:
-		_process_qte(delta)
+# =========================
+# QTE SIGNAL FORWARDING
+# =========================
 
-## Load all resources from the Resources folder
+func _on_qte_internal_started(qte_type: int) -> void:
+	qte_started.emit(qte_type, qte_system.qte_max_time)
+
+func _on_qte_internal_progress(progress: float) -> void:
+	qte_progress_changed.emit(progress)
+
+func _on_qte_internal_completed(success_level: float) -> void:
+	if not current_qte_move:
+		_log("QTE completed but no move pending!")
+		return
+	
+	var qte_mult = qte_system.get_damage_multiplier(current_qte_move)
+	
+	var result_text: String
+	if success_level >= 1.0:
+		result_text = "PERFECT"
+	elif success_level >= 0.8:
+		result_text = "GREAT"
+	elif success_level >= 0.5:
+		result_text = "GOOD"
+	else:
+		result_text = "OK"
+	
+	_log("QTE %s! (%.0f%% -> x%.2f)" % [result_text, success_level * 100, qte_mult])
+	qte_ended.emit(true, success_level)
+	
+	# Execute the move with QTE result
+	_execute_move(player_monster, enemy_monster, current_qte_move, qte_mult)
+	current_qte_move = null
+	_after_player_turn()
+
+func _on_qte_internal_failed() -> void:
+	if not current_qte_move:
+		_log("QTE failed but no move pending!")
+		return
+	
+	var fail_mult = current_qte_move.QTEFailureMultiplier
+	_log("QTE Failed! (x%.2f)" % fail_mult)
+	qte_ended.emit(false, 0.0)
+	
+	_execute_move(player_monster, enemy_monster, current_qte_move, fail_mult)
+	current_qte_move = null
+	_after_player_turn()
+
+## Public QTE API for UI
+func qte_input_action() -> void:
+	if qte_system and qte_system.is_active:
+		# Forward to QTESystem's input handler
+		# Create a synthetic input event for button mash/timed press
+		var event = InputEventAction.new()
+		event.action = "ui_accept"
+		event.pressed = true
+		qte_system._unhandled_input(event)
+
+func qte_hold_start() -> void:
+	if qte_system and qte_system.is_active:
+		var event = InputEventAction.new()
+		event.action = "ui_accept"
+		event.pressed = true
+		qte_system._unhandled_input(event)
+
+func qte_hold_end() -> void:
+	if qte_system and qte_system.is_active:
+		var event = InputEventAction.new()
+		event.action = "ui_accept"
+		event.pressed = false
+		qte_system._unhandled_input(event)
+
+# =========================
+# RESOURCE LOADING
+# =========================
+
 func load_all_resources() -> void:
-	available_monsters = _load_resources_from_folder(MONSTERS_PATH, "MonsterData")
-	available_moves = _load_resources_from_folder(MOVES_PATH, "MoveData")
-	available_items = _load_resources_from_folder(ITEMS_PATH, "ItemData")
-	available_abilities = _load_resources_from_folder(ABILITIES_PATH, "AbilityData")
-	available_status_effects = _load_resources_from_folder(STATUS_PATH, "StatusEffect")
+	available_monsters = _load_resources_from_folder(MONSTERS_PATH)
+	available_moves = _load_resources_from_folder(MOVES_PATH)
+	available_items = _load_resources_from_folder(ITEMS_PATH)
+	available_abilities = _load_resources_from_folder(ABILITIES_PATH)
+	available_status_effects = _load_resources_from_folder(STATUS_PATH)
 	
 	_log("Loaded %d monsters, %d moves, %d items, %d abilities, %d status effects" % [
 		available_monsters.size(),
@@ -94,7 +176,7 @@ func load_all_resources() -> void:
 		available_status_effects.size()
 	])
 
-func _load_resources_from_folder(path: String, type_name: String) -> Array:
+func _load_resources_from_folder(path: String) -> Array:
 	var resources = []
 	var dir = DirAccess.open(path)
 	
@@ -108,12 +190,9 @@ func _load_resources_from_folder(path: String, type_name: String) -> Array:
 				var resource = load(resource_path)
 				if resource:
 					resources.append(resource)
-					_log("Loaded: %s" % file_name)
 			file_name = dir.get_next()
 		
 		dir.list_dir_end()
-	else:
-		_log("Could not open folder: %s" % path)
 	
 	return resources
 
@@ -121,7 +200,6 @@ func _load_resources_from_folder(path: String, type_name: String) -> Array:
 # MONSTER SETUP
 # =========================
 
-## Create a battle-ready monster dictionary from MonsterData
 func create_battle_monster(data: MonsterData, level: int = 50) -> Dictionary:
 	var monster = {
 		"data": data,
@@ -140,44 +218,40 @@ func create_battle_monster(data: MonsterData, level: int = 50) -> Dictionary:
 		"special_attack_stage": 0,
 		"special_defense_stage": 0,
 		"speed_stage": 0,
+		"accuracy_stage": 0,
+		"evasion_stage": 0,
+		"crit_stage": 0,
 		"moves": [],
 		"status_effects": [],
 		"selected_move": null,
 		"selected_move_priority": 0
 	}
 	
-	# Add secondary type if present
 	if data.secondary_type != Enums.Type.NONE:
 		monster["types"].append(data.secondary_type)
 	
-	# Set HP
 	monster["current_hp"] = monster["max_hp"]
 	
-	# Get moves available at this level
 	for level_move in data.level_up_moves:
 		if level_move.level <= level:
 			monster["moves"].append(level_move.move)
 	
-	# Add some default moves if none available
 	if monster["moves"].is_empty() and available_moves.size() > 0:
 		monster["moves"].append(available_moves[0])
 	
 	return monster
 
 func _calculate_stat(base: int, level: int) -> int:
-	# Simplified stat formula
 	return int(((2.0 * base * level) / 100.0) + level + 10)
 
 # =========================
 # BATTLE SETUP
 # =========================
 
-## Set up the player's monster
 func set_player_monster(monster_data: MonsterData, level: int = 50, custom_moves: Array = []) -> void:
 	player_monster = create_battle_monster(monster_data, level)
 	if not custom_moves.is_empty():
 		player_monster["moves"] = custom_moves
-	# Initialize PP for all moves
 	player_move_pp.clear()
 	for i in range(player_monster["moves"].size()):
 		var move: MoveData = player_monster["moves"][i]
@@ -185,12 +259,10 @@ func set_player_monster(monster_data: MonsterData, level: int = 50, custom_moves
 	_log("Player selected: %s (Lv.%d)" % [player_monster["name"], level])
 	player_hp_changed.emit(player_monster["current_hp"], player_monster["max_hp"])
 
-## Set up the enemy monster
 func set_enemy_monster(monster_data: MonsterData, level: int = 50, custom_moves: Array = []) -> void:
 	enemy_monster = create_battle_monster(monster_data, level)
 	if not custom_moves.is_empty():
 		enemy_monster["moves"] = custom_moves
-	# Initialize PP for all moves
 	enemy_move_pp.clear()
 	for i in range(enemy_monster["moves"].size()):
 		var move: MoveData = enemy_monster["moves"][i]
@@ -198,12 +270,10 @@ func set_enemy_monster(monster_data: MonsterData, level: int = 50, custom_moves:
 	_log("Enemy selected: %s (Lv.%d)" % [enemy_monster["name"], level])
 	enemy_hp_changed.emit(enemy_monster["current_hp"], enemy_monster["max_hp"])
 
-## Set player's items
 func set_player_items(items: Array) -> void:
 	player_items = items
 	_log("Player has %d items" % items.size())
 
-## Add custom moves to a monster
 func add_move_to_player(move: MoveData) -> void:
 	if player_monster.has("moves"):
 		player_monster["moves"].append(move)
@@ -218,7 +288,6 @@ func add_move_to_enemy(move: MoveData) -> void:
 # BATTLE FLOW
 # =========================
 
-## Start the battle
 func start_battle() -> void:
 	if player_monster.is_empty() or enemy_monster.is_empty():
 		_log("ERROR: Both player and enemy must be set!")
@@ -233,19 +302,16 @@ func start_battle() -> void:
 	
 	turn_changed.emit(is_player_turn)
 	
-	# If player goes first, show action menu; otherwise enemy acts first
 	if is_player_turn:
 		action_menu_requested.emit()
 	else:
 		await get_tree().create_timer(0.5).timeout
 		_execute_enemy_turn()
 
-## Try to run from battle
 func try_run() -> void:
 	if not is_battle_active or not is_player_turn:
 		return
 	
-	# Simple run chance based on speed
 	var run_chance = float(player_monster["speed"]) / float(enemy_monster["speed"]) * 50.0
 	run_chance = clampf(run_chance, 20.0, 90.0)
 	
@@ -257,7 +323,6 @@ func try_run() -> void:
 		_log("Can't escape!")
 		_after_player_turn()
 
-## Execute a move (player action)
 func execute_player_move(move_index: int) -> void:
 	if not is_battle_active or not is_player_turn:
 		return
@@ -266,7 +331,6 @@ func execute_player_move(move_index: int) -> void:
 		_log("Invalid move index!")
 		return
 	
-	# Check PP
 	var current_pp = player_move_pp.get(move_index, 0)
 	if current_pp <= 0:
 		_log("No PP left for this move!")
@@ -274,22 +338,21 @@ func execute_player_move(move_index: int) -> void:
 	
 	var move: MoveData = player_monster["moves"][move_index]
 	player_monster["selected_move"] = move
+	player_monster["selected_move_priority"] = move.Priority
 	current_move_index = move_index
 	
-	# Consume PP
 	player_move_pp[move_index] = current_pp - 1
 	_log("%s uses %s! (PP: %d/%d)" % [player_monster["name"], move.MoveName, player_move_pp[move_index], move.MaxPP])
 	moves_updated.emit()
 	
-	# Check for QTE
 	if move.HasQTE and move.QTEType != Enums.QTEType.NONE:
 		current_qte_move = move
-		_start_qte(move.QTEType, move.QTETimeWindow, move.QTEDifficulty)
+		_log("QTE Started! Type: %d, Time: %.1fs" % [move.QTEType, move.QTETimeWindow])
+		qte_system.start_qte(move.QTEType, move.QTETimeWindow, move.QTEDifficulty)
 	else:
 		_execute_move(player_monster, enemy_monster, move, 1.0)
 		_after_player_turn()
 
-## Use an item
 func use_item(item_index: int) -> void:
 	if not is_battle_active or not is_player_turn:
 		return
@@ -301,10 +364,8 @@ func use_item(item_index: int) -> void:
 	var item: ItemData = player_items[item_index]
 	_log("%s uses %s!" % [player_monster["name"], item.ItemName])
 	
-	# Apply item effect
 	_apply_item_effect(item, player_monster)
 	
-	# Consume the item if it's consumable
 	if item.Consumable:
 		player_items.remove_at(item_index)
 		_log("%s was consumed. (%d remaining)" % [item.ItemName, player_items.size()])
@@ -315,34 +376,27 @@ func use_item(item_index: int) -> void:
 func _apply_item_effect(item: ItemData, target: Dictionary) -> void:
 	var effect_applied = false
 	
-	# HP Restoration (flat amount)
 	if item.RestoresHP > 0:
 		var old_hp = target["current_hp"]
 		target["current_hp"] = min(target["max_hp"], target["current_hp"] + item.RestoresHP)
-		var healed = target["current_hp"] - old_hp
-		_log("%s restored %d HP!" % [target["name"], healed])
+		_log("%s restored %d HP!" % [target["name"], target["current_hp"] - old_hp])
 		effect_applied = true
 	
-	# HP Restoration (percentage)
 	if item.RestoresHPPercent > 0.0:
 		var old_hp = target["current_hp"]
 		var heal_amount = int(target["max_hp"] * item.RestoresHPPercent)
 		target["current_hp"] = min(target["max_hp"], target["current_hp"] + heal_amount)
-		var healed = target["current_hp"] - old_hp
-		_log("%s restored %d HP! (%.0f%%)" % [target["name"], healed, item.RestoresHPPercent * 100])
+		_log("%s restored %d HP! (%.0f%%)" % [target["name"], target["current_hp"] - old_hp, item.RestoresHPPercent * 100])
 		effect_applied = true
 	
-	# PP Restoration
 	if item.RestoresPP > 0:
 		for i in range(player_monster["moves"].size()):
 			var move: MoveData = player_monster["moves"][i]
-			var old_pp = player_move_pp.get(i, 0)
-			player_move_pp[i] = min(move.MaxPP, old_pp + item.RestoresPP)
+			player_move_pp[i] = min(move.MaxPP, player_move_pp.get(i, 0) + item.RestoresPP)
 		_log("Restored %d PP to all moves!" % item.RestoresPP)
 		moves_updated.emit()
 		effect_applied = true
 	
-	# Restore all PP
 	if item.RestoresAllPP:
 		for i in range(player_monster["moves"].size()):
 			var move: MoveData = player_monster["moves"][i]
@@ -352,32 +406,27 @@ func _apply_item_effect(item: ItemData, target: Dictionary) -> void:
 		effect_applied = true
 	
 	# Stat boosts
-	if item.BoostAttack > 0:
-		target["attack_stage"] = min(6, target.get("attack_stage", 0) + item.BoostAttack)
-		_log("%s's Attack rose by %d stage(s)!" % [target["name"], item.BoostAttack])
-		effect_applied = true
+	var stat_boosts = {
+		"attack_stage": item.BoostAttack,
+		"defense_stage": item.BoostDefense,
+		"speed_stage": item.BoostSpeed,
+		"special_attack_stage": item.BoostSpecialAttack,
+		"special_defense_stage": item.BoostSpecialDefense,
+	}
+	var stat_names = {
+		"attack_stage": "Attack",
+		"defense_stage": "Defense",
+		"speed_stage": "Speed",
+		"special_attack_stage": "Sp. Attack",
+		"special_defense_stage": "Sp. Defense",
+	}
+	for stage_key in stat_boosts:
+		var boost = stat_boosts[stage_key]
+		if boost > 0:
+			target[stage_key] = min(6, target.get(stage_key, 0) + boost)
+			_log("%s's %s rose by %d stage(s)!" % [target["name"], stat_names[stage_key], boost])
+			effect_applied = true
 	
-	if item.BoostDefense > 0:
-		target["defense_stage"] = min(6, target.get("defense_stage", 0) + item.BoostDefense)
-		_log("%s's Defense rose by %d stage(s)!" % [target["name"], item.BoostDefense])
-		effect_applied = true
-	
-	if item.BoostSpeed > 0:
-		target["speed_stage"] = min(6, target.get("speed_stage", 0) + item.BoostSpeed)
-		_log("%s's Speed rose by %d stage(s)!" % [target["name"], item.BoostSpeed])
-		effect_applied = true
-	
-	if item.BoostSpecialAttack > 0:
-		target["special_attack_stage"] = min(6, target.get("special_attack_stage", 0) + item.BoostSpecialAttack)
-		_log("%s's Sp. Attack rose by %d stage(s)!" % [target["name"], item.BoostSpecialAttack])
-		effect_applied = true
-	
-	if item.BoostSpecialDefense > 0:
-		target["special_defense_stage"] = min(6, target.get("special_defense_stage", 0) + item.BoostSpecialDefense)
-		_log("%s's Sp. Defense rose by %d stage(s)!" % [target["name"], item.BoostSpecialDefense])
-		effect_applied = true
-	
-	# Status curing
 	if item.CuresAllStatus and target.has("status_effects"):
 		target["status_effects"].clear()
 		_log("%s was cured of all status conditions!" % target["name"])
@@ -393,7 +442,6 @@ func _apply_item_effect(item: ItemData, target: Dictionary) -> void:
 			_log("%s was cured of %s!" % [target["name"], ", ".join(cured)])
 			effect_applied = true
 	
-	# Update HP display
 	if target == player_monster:
 		player_hp_changed.emit(target["current_hp"], target["max_hp"])
 	else:
@@ -409,7 +457,6 @@ func _after_player_turn() -> void:
 	is_player_turn = false
 	turn_changed.emit(is_player_turn)
 	
-	# Enemy turn (simple AI)
 	await get_tree().create_timer(0.5).timeout
 	_execute_enemy_turn()
 
@@ -417,15 +464,11 @@ func _execute_enemy_turn() -> void:
 	if not is_battle_active:
 		return
 	
-	# Simple AI: pick a random move that has PP
 	if enemy_monster["moves"].is_empty():
 		_log("%s has no moves!" % enemy_monster["name"])
-		is_player_turn = true
-		turn_changed.emit(is_player_turn)
-		action_menu_requested.emit()
+		_end_enemy_turn()
 		return
 	
-	# Find moves with PP remaining
 	var valid_moves: Array = []
 	for i in range(enemy_monster["moves"].size()):
 		if enemy_move_pp.get(i, 0) > 0:
@@ -433,52 +476,72 @@ func _execute_enemy_turn() -> void:
 	
 	if valid_moves.is_empty():
 		_log("%s has no PP left!" % enemy_monster["name"])
-		is_player_turn = true
-		turn_changed.emit(is_player_turn)
-		action_menu_requested.emit()
+		_end_enemy_turn()
 		return
 	
 	var move_index = valid_moves[randi() % valid_moves.size()]
 	var move: MoveData = enemy_monster["moves"][move_index]
 	
-	# Consume PP
 	enemy_move_pp[move_index] = enemy_move_pp.get(move_index, 0) - 1
 	_log("%s uses %s!" % [enemy_monster["name"], move.MoveName])
 	
-	# Enemy doesn't use QTE
 	_execute_move(enemy_monster, player_monster, move, 1.0)
 	
 	if _check_battle_end():
 		return
 	
+	_end_enemy_turn()
+
+func _end_enemy_turn() -> void:
 	is_player_turn = true
 	turn_changed.emit(is_player_turn)
-	action_menu_requested.emit()  # Show action menu for next turn
+	action_menu_requested.emit()
 
 # =========================
-# MOVE EXECUTION
+# MOVE EXECUTION (uses DamageCalculator & TypeChart)
 # =========================
 
 func _execute_move(attacker: Dictionary, defender: Dictionary, move: MoveData, qte_multiplier: float) -> void:
-	# Check accuracy
-	if randf() * 100.0 > move.Accuracy:
+	# Use DamageCalculator for accuracy check
+	if not DamageCalculator.check_accuracy(attacker, defender, move):
 		_log("%s's attack missed!" % attacker["name"])
 		return
 	
-	# Calculate damage
 	if move.AttackType == Enums.AttackType.STATUS:
 		_log("%s used a status move!" % attacker["name"])
-		# Handle status effects
-		if move.InflictsStatus and move.StatusEffect:
-			_apply_status(defender, move.StatusEffect)
+		if move.InflictsStatus and move.status_effect:
+			if randf() * 100.0 <= move.StatusChance:
+				_apply_status(defender, move.status_effect)
+		_apply_stat_changes(attacker, move, true)
+		_apply_stat_changes(defender, move, false)
 		return
 	
-	var damage = _calculate_damage(attacker, defender, move, qte_multiplier)
+	# Calculate hit count for multi-hit moves
+	var hit_count = DamageCalculator.calculate_hit_count(move)
+	var total_damage = 0
 	
-	# Apply damage
-	defender["current_hp"] = max(0, defender["current_hp"] - damage)
+	for i in range(hit_count):
+		var is_crit = DamageCalculator.check_critical_hit(attacker, move)
+		
+		var damage_info = DamageCalculator.calculate_damage(
+			attacker, defender, move, qte_multiplier, is_crit
+		)
+		
+		var damage = damage_info.damage
+		total_damage += damage
+		
+		defender["current_hp"] = max(0, defender["current_hp"] - damage)
+		
+		# Log type effectiveness
+		if damage_info.is_critical:
+			_log("Critical hit!")
+		if damage_info.effectiveness_text != "":
+			_log(damage_info.effectiveness_text)
 	
-	_log("%s dealt %d damage!" % [attacker["name"], damage])
+	_log("%s dealt %d damage!" % [attacker["name"], total_damage])
+	
+	if hit_count > 1:
+		_log("Hit %d time(s)!" % hit_count)
 	
 	if qte_multiplier > 1.0:
 		_log("QTE Bonus: x%.2f" % qte_multiplier)
@@ -491,175 +554,58 @@ func _execute_move(attacker: Dictionary, defender: Dictionary, move: MoveData, q
 	else:
 		player_hp_changed.emit(defender["current_hp"], defender["max_hp"])
 	
+	# Apply recoil
+	if move.Recoil > 0:
+		var recoil = DamageCalculator.calculate_recoil(total_damage, move)
+		attacker["current_hp"] = max(0, attacker["current_hp"] - recoil)
+		_log("%s took %d recoil damage!" % [attacker["name"], recoil])
+	
+	# Apply drain
+	if move.Drain > 0:
+		var drain = DamageCalculator.calculate_drain(total_damage, move)
+		attacker["current_hp"] = min(attacker["max_hp"], attacker["current_hp"] + drain)
+		_log("%s recovered %d HP!" % [attacker["name"], drain])
+	
 	# Check for status infliction
-	if move.InflictsStatus and move.StatusEffect:
+	if move.InflictsStatus and move.status_effect:
 		if randf() * 100.0 <= move.StatusChance:
-			_apply_status(defender, move.StatusEffect)
+			_apply_status(defender, move.status_effect)
+	
+	# Check for flinch
+	if DamageCalculator.check_flinch(move):
+		_log("%s flinched!" % defender["name"])
+	
+	# Apply stat changes
+	_apply_stat_changes(attacker, move, true)
+	_apply_stat_changes(defender, move, false)
 
-func _calculate_damage(attacker: Dictionary, defender: Dictionary, move: MoveData, qte_mult: float) -> int:
-	var level = attacker["level"]
-	var power = move.Damage
-	
-	var attack_stat: float
-	var defense_stat: float
-	
-	if move.AttackType == Enums.AttackType.PHYSICAL:
-		attack_stat = attacker["attack"]
-		defense_stat = defender["defense"]
+func _apply_stat_changes(target: Dictionary, move: MoveData, is_user: bool) -> void:
+	if is_user:
+		if move.UserAttackChange != 0:
+			target["attack_stage"] = DamageCalculator.modify_stat_stage(target.get("attack_stage", 0), move.UserAttackChange)
+			_log("%s's Attack %s!" % [target["name"], "rose" if move.UserAttackChange > 0 else "fell"])
+		if move.UserDefenseChange != 0:
+			target["defense_stage"] = DamageCalculator.modify_stat_stage(target.get("defense_stage", 0), move.UserDefenseChange)
+			_log("%s's Defense %s!" % [target["name"], "rose" if move.UserDefenseChange > 0 else "fell"])
+		if move.UserSpeedChange != 0:
+			target["speed_stage"] = DamageCalculator.modify_stat_stage(target.get("speed_stage", 0), move.UserSpeedChange)
+			_log("%s's Speed %s!" % [target["name"], "rose" if move.UserSpeedChange > 0 else "fell"])
 	else:
-		attack_stat = attacker["special_attack"]
-		defense_stat = defender["special_defense"]
-	
-	# Base damage formula
-	var damage = ((2.0 * level / 5.0 + 2.0) * power * attack_stat / defense_stat) / 50.0 + 2.0
-	
-	# STAB
-	if move.MoveType in attacker["types"]:
-		damage *= 1.5
-		_log("STAB bonus!")
-	
-	# Type effectiveness (simplified)
-	var effectiveness = _get_type_effectiveness(move.MoveType, defender["types"])
-	damage *= effectiveness
-	
-	if effectiveness > 1.0:
-		_log("It's super effective!")
-	elif effectiveness < 1.0 and effectiveness > 0:
-		_log("It's not very effective...")
-	elif effectiveness == 0:
-		_log("It has no effect...")
-	
-	# Random factor
-	damage *= randf_range(0.85, 1.0)
-	
-	# QTE multiplier
-	damage *= qte_mult
-	
-	# Critical hit chance
-	if randf() < 0.0625:  # 1/16 chance
-		damage *= 1.5
-		_log("Critical hit!")
-	
-	return max(1, int(damage))
-
-func _get_type_effectiveness(move_type: int, defender_types: Array) -> float:
-	# Simplified type chart - you can expand this
-	# Returns 2.0 for super effective, 0.5 for not effective, 0 for immune
-	return 1.0  # Default to neutral
+		if move.TargetAttackChange != 0:
+			target["attack_stage"] = DamageCalculator.modify_stat_stage(target.get("attack_stage", 0), move.TargetAttackChange)
+			_log("%s's Attack %s!" % [target["name"], "rose" if move.TargetAttackChange > 0 else "fell"])
+		if move.TargetDefenseChange != 0:
+			target["defense_stage"] = DamageCalculator.modify_stat_stage(target.get("defense_stage", 0), move.TargetDefenseChange)
+			_log("%s's Defense %s!" % [target["name"], "rose" if move.TargetDefenseChange > 0 else "fell"])
+		if move.TargetSpeedChange != 0:
+			target["speed_stage"] = DamageCalculator.modify_stat_stage(target.get("speed_stage", 0), move.TargetSpeedChange)
+			_log("%s's Speed %s!" % [target["name"], "rose" if move.TargetSpeedChange > 0 else "fell"])
 
 func _apply_status(target: Dictionary, status: StatusEffect) -> void:
+	if not target.has("status_effects"):
+		target["status_effects"] = []
 	target["status_effects"].append(status)
 	_log("%s was afflicted with %s!" % [target["name"], status.Name])
-
-# =========================
-# QTE SYSTEM
-# =========================
-
-func _start_qte(type: int, time_window: float, difficulty: int) -> void:
-	qte_active = true
-	qte_type = type
-	qte_max_time = time_window
-	qte_time_remaining = time_window
-	qte_difficulty = difficulty
-	qte_progress = 0.0
-	qte_button_mash_count = 0
-	qte_button_mash_required = 5 + (difficulty * 3)
-	qte_hold_duration = 0.0
-	qte_hold_required = time_window * 0.7
-	qte_is_holding = false
-	
-	_log("QTE Started! Type: %d, Time: %.1fs" % [type, time_window])
-	qte_started.emit(type, time_window)
-
-func _process_qte(delta: float) -> void:
-	qte_time_remaining -= delta
-	
-	if qte_time_remaining <= 0:
-		# Time's up - complete with current progress
-		_complete_qte_with_progress()
-		return
-	
-	# Process HOLD type
-	if qte_type == Enums.QTEType.HOLD and qte_is_holding:
-		qte_hold_duration += delta
-		qte_progress = clampf(qte_hold_duration / qte_hold_required, 0.0, 1.0)
-		qte_progress_changed.emit(qte_progress)
-		
-		if qte_hold_duration >= qte_hold_required:
-			_complete_qte_with_progress()
-	
-	# Update progress for TIMED_PRESS (show timing bar)
-	if qte_type == Enums.QTEType.TIMED_PRESS:
-		qte_progress = (qte_max_time - qte_time_remaining) / qte_max_time
-		qte_progress_changed.emit(qte_progress)
-
-func qte_input_action() -> void:
-	if not qte_active:
-		return
-	
-	match qte_type:
-		Enums.QTEType.BUTTON_MASH:
-			qte_button_mash_count += 1
-			qte_progress = clampf(float(qte_button_mash_count) / float(qte_button_mash_required), 0.0, 1.0)
-			qte_progress_changed.emit(qte_progress)
-			_log("Mash: %d/%d" % [qte_button_mash_count, qte_button_mash_required])
-			
-			if qte_button_mash_count >= qte_button_mash_required:
-				_complete_qte_with_progress()
-		
-		Enums.QTEType.TIMED_PRESS:
-			# For timed press, pressing sets progress based on how close to center (0.5) you are
-			# Perfect timing at 50% = 1.0 progress, pressing at edges = lower progress
-			var current_position = (qte_max_time - qte_time_remaining) / qte_max_time
-			var distance_from_center = abs(current_position - 0.5) * 2.0  # 0 at center, 1 at edges
-			qte_progress = 1.0 - distance_from_center  # 1.0 at center, 0 at edges
-			qte_progress = clampf(qte_progress, 0.0, 1.0)
-			_complete_qte_with_progress()
-
-func qte_hold_start() -> void:
-	if qte_active and qte_type == Enums.QTEType.HOLD:
-		qte_is_holding = true
-
-func qte_hold_end() -> void:
-	if qte_active and qte_type == Enums.QTEType.HOLD:
-		qte_is_holding = false
-		# When releasing hold, complete with current progress
-		_complete_qte_with_progress()
-
-## Complete QTE based on current progress - closer to full bar = better multiplier
-func _complete_qte_with_progress() -> void:
-	qte_active = false
-	
-	# Calculate multiplier based on progress (0.0 to 1.0)
-	# Interpolate between failure multiplier and success multiplier based on progress
-	var fail_mult = current_qte_move.QTEFailureMultiplier
-	var success_mult = current_qte_move.QTESuccessMultiplier
-	
-	# Linear interpolation: at 0% progress = fail_mult, at 100% progress = success_mult
-	var qte_multiplier = lerp(fail_mult, success_mult, qte_progress)
-	
-	# Determine result tier for logging
-	var result_text: String
-	if qte_progress >= 0.9:
-		result_text = "PERFECT"
-	elif qte_progress >= 0.7:
-		result_text = "GREAT"
-	elif qte_progress >= 0.5:
-		result_text = "GOOD"
-	elif qte_progress >= 0.3:
-		result_text = "OK"
-	else:
-		result_text = "MISS"
-	
-	_log("QTE %s! (%.0f%% -> x%.2f)" % [result_text, qte_progress * 100, qte_multiplier])
-	
-	qte_ended.emit(qte_progress >= 0.5, qte_progress)
-	
-	# Execute the move with QTE result
-	_execute_move(player_monster, enemy_monster, current_qte_move, qte_multiplier)
-	current_qte_move = null
-	
-	_after_player_turn()
 
 # =========================
 # BATTLE END
@@ -690,7 +636,6 @@ func _log(message: String) -> void:
 	print("[DEBUG BATTLE] " + message)
 	battle_log_updated.emit(message)
 
-## Debug: Set HP directly
 func debug_set_player_hp(hp: int) -> void:
 	player_monster["current_hp"] = clamp(hp, 0, player_monster["max_hp"])
 	player_hp_changed.emit(player_monster["current_hp"], player_monster["max_hp"])
@@ -699,14 +644,12 @@ func debug_set_enemy_hp(hp: int) -> void:
 	enemy_monster["current_hp"] = clamp(hp, 0, enemy_monster["max_hp"])
 	enemy_hp_changed.emit(enemy_monster["current_hp"], enemy_monster["max_hp"])
 
-## Debug: Apply status
 func debug_apply_status_to_player(status: StatusEffect) -> void:
 	_apply_status(player_monster, status)
 
 func debug_apply_status_to_enemy(status: StatusEffect) -> void:
 	_apply_status(enemy_monster, status)
 
-## Get resource lists for UI
 func get_monster_names() -> Array[String]:
 	var names: Array[String] = []
 	for m in available_monsters:
@@ -725,11 +668,9 @@ func get_item_names() -> Array[String]:
 		names.append(i.ItemName)
 	return names
 
-## Get current PP for a player move
 func get_player_move_pp(move_index: int) -> int:
 	return player_move_pp.get(move_index, 0)
 
-## Get max PP for a player move
 func get_player_move_max_pp(move_index: int) -> int:
 	if move_index >= 0 and move_index < player_monster["moves"].size():
 		var move: MoveData = player_monster["moves"][move_index]

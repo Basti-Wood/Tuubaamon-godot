@@ -275,8 +275,8 @@ func _finalize_move_execution(
 	
 	# Check for status effect
 	if damage_calculator.check_status_infliction(move):
-		if move.StatusEffect:
-			_apply_status(defender, move.StatusEffect)
+		if move.status_effect:
+			_apply_status(defender, move.status_effect)
 	
 	# Check for flinch
 	if damage_calculator.check_flinch(move):

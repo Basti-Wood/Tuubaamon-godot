@@ -23,7 +23,7 @@ class_name MonsterData
 # =========================
 
 # Limit to 1–2 types by convention
-@export var primary_type: Enums.Type = 1
+@export var primary_type: Enums.Type = Enums.Type.NORMAL
 @export var secondary_type: Enums.Type
 
 # =========================

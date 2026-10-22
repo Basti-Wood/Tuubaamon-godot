@@ -389,7 +389,7 @@ func _on_item_button_pressed(index: int) -> void:
 # QTE PANEL
 # =========================
 
-func _on_qte_started(qte_type: int, time_window: float) -> void:
+func _on_qte_started(qte_type: int, _time_window: float) -> void:
 	qte_panel.visible = true
 	qte_bar.value = 0
 	qte_bar.max_value = 100

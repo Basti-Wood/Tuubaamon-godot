@@ -126,3 +126,13 @@ enum StatusType {
 	TEMPORARY,    # Sleep, Freeze
 	INSTANT       # Confuse trigger, Flinch
 }
+
+# =========================
+# MERGE SYSTEM ENUMS
+# =========================
+
+enum BattlerType {
+	MONSTER,        # A monster battler
+	PLAYER_HUMAN,   # Unmerged player character
+	PLAYER_MERGED   # Player merged with a monster
+}

@@ -164,7 +164,7 @@ func _handle_button_mash(event: InputEvent) -> void:
 # TIMED PRESS
 # =========================
 
-func _process_timed_press(delta: float) -> void:
+func _process_timed_press(_delta: float) -> void:
 	var time_elapsed = qte_max_time - qte_time_remaining
 	qte_progress_updated.emit(time_elapsed / qte_max_time)
 
@@ -246,7 +246,7 @@ func _generate_rhythm_beats(difficulty: int, total_time: float) -> Array[float]:
 	
 	return beats
 
-func _process_rhythm(delta: float) -> void:
+func _process_rhythm(_delta: float) -> void:
 	var time_elapsed = qte_max_time - qte_time_remaining
 	
 	# Show which beat we're waiting for
@@ -289,6 +289,7 @@ func _complete_qte(succeeded: bool) -> void:
 	if not succeeded:
 		success_level = 0.0
 		qte_failed.emit()
+		return  # Don't also emit completed on failure
 	
 	qte_completed.emit(success_level)
 

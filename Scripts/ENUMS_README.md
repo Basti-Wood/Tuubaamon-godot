@@ -52,6 +52,11 @@ All enums in the Tuubaamon project are now centralized in [Enums.gd](Enums.gd). 
   - Used in: StatusEffectTemplate
   - Values: PERSISTENT, TEMPORARY, INSTANT
 
+### Merge System
+- **Enums.BattlerType** - Type of entity in battle
+  - Used in: MergeSystem, BattleSystem
+  - Values: MONSTER, PLAYER_HUMAN, PLAYER_MERGED
+
 ## Usage Examples
 
 ### Accessing Enums
@@ -70,6 +75,13 @@ move.QTEType = Enums.QTEType.TIMED_PRESS
 
 # Check type effectiveness
 var effectiveness = TypeChart.get_effectiveness(Enums.Type.WATER, [Enums.Type.FIRE])
+
+# Create a player battler
+var battler_type = Enums.BattlerType.PLAYER_HUMAN
+
+# Merge player with a monster
+var merge_system = MergeSystem.new()
+merge_system.merge(player_data, monster_data, player_level)
 ```
 
 ### Comparing Enum Values
