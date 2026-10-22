@@ -141,7 +141,7 @@ static func create_player_battler(player: PlayerData, player_level: int) -> Dict
 		"player_data": player,
 		"level": player_level,
 		# Human is TYPELESS - no STAB, normal type effectiveness
-		"types": [Enums.Type.NORMAL],
+		"types": [],
 		"max_hp": _calculate_player_stat(player.base_hp, player_level),
 		"current_hp": 0,
 		"attack": _calculate_player_stat(player.base_attack, player_level),

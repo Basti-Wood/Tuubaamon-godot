@@ -135,7 +135,8 @@ func _on_qte_internal_failed() -> void:
 
 ## Public QTE API for UI
 func qte_input_action() -> void:
-	if qte_system and qte_system.is_active:
+	# HOLD läuft über qte_hold_start/qte_hold_end, sonst würde ein Druck doppelt zählen
+	if qte_system and qte_system.is_active and qte_system.current_qte_type != Enums.QTEType.HOLD:
 		# Forward to QTESystem's input handler
 		# Create a synthetic input event for button mash/timed press
 		var event = InputEventAction.new()
@@ -144,14 +145,14 @@ func qte_input_action() -> void:
 		qte_system._unhandled_input(event)
 
 func qte_hold_start() -> void:
-	if qte_system and qte_system.is_active:
+	if qte_system and qte_system.is_active and qte_system.current_qte_type == Enums.QTEType.HOLD:
 		var event = InputEventAction.new()
 		event.action = "ui_accept"
 		event.pressed = true
 		qte_system._unhandled_input(event)
 
 func qte_hold_end() -> void:
-	if qte_system and qte_system.is_active:
+	if qte_system and qte_system.is_active and qte_system.current_qte_type == Enums.QTEType.HOLD:
 		var event = InputEventAction.new()
 		event.action = "ui_accept"
 		event.pressed = false
@@ -565,6 +566,13 @@ func _execute_move(attacker: Dictionary, defender: Dictionary, move: MoveData, q
 		var drain = DamageCalculator.calculate_drain(total_damage, move)
 		attacker["current_hp"] = min(attacker["max_hp"], attacker["current_hp"] + drain)
 		_log("%s recovered %d HP!" % [attacker["name"], drain])
+	
+	# Update attacker HP display after recoil/drain
+	if move.Recoil > 0 or move.Drain > 0:
+		if attacker == enemy_monster:
+			enemy_hp_changed.emit(attacker["current_hp"], attacker["max_hp"])
+		else:
+			player_hp_changed.emit(attacker["current_hp"], attacker["max_hp"])
 	
 	# Check for status infliction
 	if move.InflictsStatus and move.status_effect:
