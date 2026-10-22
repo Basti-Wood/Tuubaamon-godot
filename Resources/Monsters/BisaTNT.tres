@@ -4,25 +4,8 @@
 
 [resource]
 script = ExtResource("1_7pcj4")
-name = null
-monster_id = null
-description = null
-idle_animation = null
-attack_animation = null
-hurt_animation = null
-defeat_animation = null
-primary_type = null
-secondary_type = null
-base_hp = null
-base_attack = null
-base_defense = null
-base_special_attack = null
-base_special_defense = null
-base_speed = null
-base_exp_yield = null
-growth_rate = null
-catch_rate = null
-abilities = null
-level_up_moves = null
-evolution_level = null
-developer_notes = null
+name = "BisaTNT"
+monster_id = 2
+primary_type = 5
+secondary_type = 2
+developer_notes = "Entwicklung von BisaBomb (ab Level 25). TODO: Werte, Sprite und Attacken eintragen."

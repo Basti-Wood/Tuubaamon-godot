@@ -3,7 +3,8 @@ class_name Enums
 
 ## Centralized Enums for the Tuubaamon project
 ## This file contains all shared enums used across different systems
-## Changing an enum here will automatically update all files that reference it
+## ACHTUNG: .tres-Dateien speichern Enum-Werte als Zahl (z. B. primary_type = 5).
+## Neue Werte darum immer ANS ENDE eines Enums setzen, sonst verrutschen alle gespeicherten Monster/Attacken.
 
 # =========================
 # TYPE ENUMS
@@ -125,4 +126,14 @@ enum StatusType {
 	PERSISTENT,   # Poison, Burn, Regeneration
 	TEMPORARY,    # Sleep, Freeze
 	INSTANT       # Confuse trigger, Flinch
+}
+
+# =========================
+# MERGE SYSTEM ENUMS
+# =========================
+
+enum BattlerType {
+	MONSTER,        # A monster battler
+	PLAYER_HUMAN,   # Unmerged player character
+	PLAYER_MERGED   # Player merged with a monster
 }

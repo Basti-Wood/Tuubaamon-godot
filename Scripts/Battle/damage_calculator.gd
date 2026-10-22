@@ -318,10 +318,10 @@ static func create_battle_data(monster_data: MonsterData, level: int) -> Diction
 static func calculate_stat(base_stat: int, level: int, iv: int = 15, ev: int = 0) -> int:
 	# Simplified stat calculation
 	# Formula: ((2 * Base + IV + EV/4) * Level / 100) + 5
-	return int(((2 * base_stat + iv + ev / 4) * level / 100.0) + 5)
+	return int(((2 * base_stat + iv + ev / 4.0) * level / 100.0) + 5)
 
 ## Calculate max HP
 static func calculate_max_hp(base_hp: int, level: int, iv: int = 15, ev: int = 0) -> int:
 	# HP uses a different formula
 	# Formula: ((2 * Base + IV + EV/4) * Level / 100) + Level + 10
-	return int(((2 * base_hp + iv + ev / 4) * level / 100.0) + level + 10)
+	return int(((2 * base_hp + iv + ev / 4.0) * level / 100.0) + level + 10)

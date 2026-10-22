@@ -124,10 +124,12 @@ func _input(event: InputEvent) -> void:
 	if battle_manager.qte_active:
 		if event.is_action_pressed("ui_accept"):
 			_on_qte_action_pressed()
-		if event.is_action_pressed("ui_accept"):
 			_on_qte_hold_start()
-		if event.is_action_released("ui_accept"):
+			# Nur einmal weiterleiten, nicht zusätzlich über QTESystem._unhandled_input
+			get_viewport().set_input_as_handled()
+		elif event.is_action_released("ui_accept"):
 			_on_qte_hold_end()
+			get_viewport().set_input_as_handled()
 
 # =========================
 # SETUP PANEL
@@ -389,7 +391,7 @@ func _on_item_button_pressed(index: int) -> void:
 # QTE PANEL
 # =========================
 
-func _on_qte_started(qte_type: int, time_window: float) -> void:
+func _on_qte_started(qte_type: int, _time_window: float) -> void:
 	qte_panel.visible = true
 	qte_bar.value = 0
 	qte_bar.max_value = 100

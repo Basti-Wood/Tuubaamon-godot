@@ -1,8 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://docax423vqfnq"]
+[gd_scene load_steps=3 format=3 uid="uid://docax423vqfnq"]
 
 [ext_resource type="Script" uid="uid://c12fdnou1dj7a" path="res://Scripts/Main menue/sound_options.gd" id="1_67o8r"]
+[ext_resource type="Theme" path="res://Assets/UI/main_theme.tres" id="theme_main"]
 
 [node name="SoundOptions" type="Control"]
+theme = ExtResource("theme_main")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,6 +13,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_67o8r")
 metadata/_edit_use_anchors_ = true
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.137, 0.102, 0.212, 1)
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 1

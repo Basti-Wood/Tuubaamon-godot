@@ -1,12 +1,24 @@
-[gd_scene format=3 uid="uid://djwew5lfior5v"]
+[gd_scene load_steps=2 format=3 uid="uid://djwew5lfior5v"]
+
+[ext_resource type="Theme" path="res://Assets/UI/main_theme.tres" id="theme_main"]
 
 [node name="Control" type="Control"]
+theme = ExtResource("theme_main")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.137, 0.102, 0.212, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1

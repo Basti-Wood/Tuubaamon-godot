@@ -13,7 +13,7 @@ class_name MoveData
 @export_range(-1, 1) var Priority: int = 0
 
 @export var InflictsStatus: bool = false
-@export var StatusEffect: Resource
+@export var status_effect: Resource
 @export_range(0, 100) var StatusChance: int = 0
 
 @export var Contact: bool = true
