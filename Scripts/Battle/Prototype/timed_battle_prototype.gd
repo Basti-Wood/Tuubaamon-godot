@@ -258,7 +258,7 @@ func _battle_loop() -> void:
 
 	while not is_over:
 		# Initiative entscheidet, wer zuerst handelt
-		var player_first = player["speed"] >= enemy["speed"]
+		var player_first = _initiative(player) >= _initiative(enemy)
 		for is_player_turn in ([true, false] if player_first else [false, true]):
 			if is_player_turn:
 				await _player_turn()
@@ -266,6 +266,10 @@ func _battle_loop() -> void:
 				await _enemy_turn()
 			if _check_end():
 				return
+
+## Initiative inklusive Stufen, damit Attacken wie "Initiative sinkt" die Reihenfolge ändern
+func _initiative(battler: Dictionary) -> float:
+	return battler["speed"] * DamageCalculator.get_stat_stage_multiplier(battler.get("speed_stage", 0))
 
 func _player_turn() -> void:
 	hint_label.text = "Wähle eine Attacke"
