@@ -11,4 +11,6 @@ Contact = false
 HasQTE = true
 QTEType = 2
 IsMultiHit = true
-MaxHits = 5
+MinHits = 3
+MaxHits = 3
+TimingHits = Array[float]([0.6, 0.85, 1.05])

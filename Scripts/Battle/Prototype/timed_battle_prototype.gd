@@ -5,6 +5,7 @@ extends Control
 ## - Verteidigung: beim gegnerischen Aufprall drücken -> weniger Schaden, exzellent = ausgewichen.
 ## - Gegner-Attacken bekommen ebenfalls eine Timing-Stufe (über "Präzision").
 ## - Krits sind getrennt und hängen an Glück.
+## - Jede Attacke (auch Status) hat ein Timing. Wann gedrückt wird, steht in der Attacke (TimingHits).
 ## Rechnet Schaden über DamageCalculator / TypeChart. Die UI wird im Code gebaut,
 ## damit keine bestehende Szene angefasst wird.
 
@@ -44,10 +45,7 @@ const TIER_COLORS: Array[Color] = [
 @export var auto_timing: bool = false
 @export_range(0.25, 3.0) var timing_window_scale: float = 1.0
 
-## Zeit vom Absprung bis zum Aufprall (Sekunden)
-@export var player_approach_time: float = 0.8
-@export var enemy_approach_min: float = 0.55
-@export var enemy_approach_max: float = 1.2
+## Die Aufprall-Zeitpunkte kommen aus jeder Attacke (MoveData.TimingHits).
 
 # =========================
 # STATE
@@ -277,14 +275,17 @@ func _player_turn() -> void:
 	move_menu.get_child(0).grab_focus()
 	var move: MoveData = await move_chosen
 	move_menu.visible = false
-	hint_label.text = "Drücke [Leertaste], wenn der Ring den Kreis berührt!"
+	hint_label.text = "Drücke [Leertaste], wenn der Ring den Kreis berührt! (%d×)" % move.get_timing_hits().size()
 	await _perform_attack(player, enemy, move, true)
 	hint_label.text = ""
 
 func _enemy_turn() -> void:
 	var move: MoveData = enemy["moves"].pick_random()
 	await get_tree().create_timer(0.4).timeout
-	hint_label.text = "Verteidigen: drücke [Leertaste] beim Aufprall!"
+	if move.AttackType == Enums.AttackType.STATUS or move.Damage <= 0:
+		hint_label.text = "Der Gegner bereitet sich vor ..."
+	else:
+		hint_label.text = "Verteidigen: drücke [Leertaste] beim Aufprall! (%d×)" % move.get_timing_hits().size()
 	await _perform_attack(enemy, player, move, false)
 	hint_label.text = ""
 
@@ -292,49 +293,69 @@ func _perform_attack(attacker: Dictionary, defender: Dictionary, move: MoveData,
 	var attacker_sprite = player_sprite if attacker_is_player else enemy_sprite
 	var defender_sprite = enemy_sprite if attacker_is_player else player_sprite
 	var attacker_home = player_home if attacker_is_player else enemy_home
+	var is_status = move.AttackType == Enums.AttackType.STATUS or move.Damage <= 0
 
 	_log("%s setzt %s ein!" % [attacker["name"], move.MoveName])
 
-	# Statusattacken: noch ohne Timing, nur Statuswert-Änderungen
-	if move.AttackType == Enums.AttackType.STATUS or move.Damage <= 0:
+	# Jede Attacke hat ein Timing. Die Aufpralle stehen in der Attacke (TimingHits),
+	# die Platzhalter-Animation trifft genau zu diesen Zeitpunkten.
+	var hit_times = move.get_timing_hits()
+	ring.position = attacker_sprite.position if is_status else defender_sprite.position
+	# Status-Attacken des Gegners: nur sein Timing wird ausgewürfelt, du musst nichts drücken
+	command.auto_timing = auto_timing or (is_status and not attacker_is_player)
+	command.start_for_move(move)
+	var animation = _status_animation(attacker_sprite, attacker_home, hit_times) if is_status \
+		else _attack_animation(attacker_sprite, attacker_home, defender_sprite.position, hit_times)
+
+	var attack_tiers: Array[int] = []
+	var defense_tiers: Array[int] = []
+	while command.is_active:
+		var judged: Array = await command.hit_judged
+		var pressed_tier: int = judged[1]
+		var offset_ms: float = judged[2] * 1000.0
+		var hit_label = "" if hit_times.size() == 1 else " %d/%d" % [judged[0] + 1, hit_times.size()]
+		if attacker_is_player or is_status:
+			attack_tiers.append(pressed_tier if attacker_is_player else ActionCommand.roll_enemy_tier(enemy_precision))
+			var shown = attack_tiers.back()
+			ring.flash(TIER_COLORS[shown])
+			_popup(ActionCommand.TIER_NAMES[shown], ring.position + Vector2(0, -110), TIER_COLORS[shown])
+			_log("  Timing%s: %s (%+.0f ms)" % [hit_label, ActionCommand.TIER_NAMES[shown], offset_ms])
+		else:
+			var enemy_tier = ActionCommand.roll_enemy_tier(enemy_precision)
+			attack_tiers.append(enemy_tier)
+			defense_tiers.append(pressed_tier)
+			ring.flash(TIER_COLORS[pressed_tier])
+			_popup(ActionCommand.TIER_NAMES[enemy_tier], attacker_home + Vector2(0, -110), TIER_COLORS[enemy_tier], 22)
+			_popup(_defense_text(pressed_tier), defender_sprite.position + Vector2(0, -110), TIER_COLORS[pressed_tier])
+			_log("  Gegner-Timing%s: %s · Verteidigung: %s (%+.0f ms)" % [
+				hit_label, ActionCommand.TIER_NAMES[enemy_tier], _defense_text(pressed_tier), offset_ms
+			])
+	if animation.is_running():
+		await animation.finished
+
+	if is_status:
+		# TODO: Soll das Timing Status-Attacken stärker/schwächer machen? (offen, Design-Dokument)
 		_apply_stat_changes(attacker, defender, move)
-		await get_tree().create_timer(0.6).timeout
-		return
-
-	# Anlauf + Action Command: der Aufprall passiert genau am Ende des Sprungs
-	var approach = player_approach_time if attacker_is_player else randf_range(enemy_approach_min, enemy_approach_max)
-	ring.position = defender_sprite.position
-	command.start(approach)
-	var hop = _hop(attacker_sprite, attacker_home, defender_sprite.position, approach)
-	var pressed_tier: int = await command.finished
-	if hop.is_running():
-		await hop.finished
-
-	var attack_tier: int
-	var defense_tier: int = ActionCommand.Tier.SCHLECHT
-	var offset_ms = command.last_offset * 1000.0
-	if attacker_is_player:
-		attack_tier = pressed_tier
-		ring.flash(TIER_COLORS[attack_tier])
-		_popup(ActionCommand.TIER_NAMES[attack_tier], defender_sprite.position + Vector2(0, -110), TIER_COLORS[attack_tier])
-		_log("  Angriff: %s (%+.0f ms)" % [ActionCommand.TIER_NAMES[attack_tier], offset_ms])
+		await get_tree().create_timer(0.4).timeout
+	elif move.IsMultiHit:
+		# Mehrfachtreffer: jeder Druck ist ein eigener Treffer mit eigener Stufe
+		for i in range(attack_tiers.size()):
+			var defense_tier = defense_tiers[i] if i < defense_tiers.size() else ActionCommand.Tier.SCHLECHT
+			await _resolve_hit(attacker, defender, move, attack_tiers[i], defense_tier, defender_sprite, i == attack_tiers.size() - 1)
+			if defender["current_hp"] <= 0:
+				break
 	else:
-		attack_tier = ActionCommand.roll_enemy_tier(enemy_precision)
-		defense_tier = pressed_tier
-		ring.flash(TIER_COLORS[defense_tier])
-		_popup(ActionCommand.TIER_NAMES[attack_tier], attacker_home + Vector2(0, -110), TIER_COLORS[attack_tier], 22)
-		_popup(_defense_text(defense_tier), defender_sprite.position + Vector2(0, -110), TIER_COLORS[defense_tier])
-		_log("  Gegner-Timing: %s · Verteidigung: %s (%+.0f ms)" % [
-			ActionCommand.TIER_NAMES[attack_tier], _defense_text(defense_tier), offset_ms
-		])
-
-	await _resolve_hit(attacker, defender, move, attack_tier, defense_tier, defender_sprite)
+		# Ein Treffer: Durchschnitt aller Drücke
+		var defense_tier = ActionCommand.average_tier(defense_tiers) if not defense_tiers.is_empty() else ActionCommand.Tier.SCHLECHT
+		await _resolve_hit(attacker, defender, move, ActionCommand.average_tier(attack_tiers), defense_tier, defender_sprite, true)
 
 	var back = create_tween()
 	back.tween_property(attacker_sprite, "position", attacker_home, 0.3)
 	await back.finished
 
-func _resolve_hit(attacker: Dictionary, defender: Dictionary, move: MoveData, attack_tier: int, defense_tier: int, defender_sprite: Sprite2D) -> void:
+## Ein Treffer. Bei Mehrfachtreffern wird das für jeden Druck einzeln aufgerufen,
+## Werte-Änderungen gibt es nur beim letzten (apply_effects).
+func _resolve_hit(attacker: Dictionary, defender: Dictionary, move: MoveData, attack_tier: int, defense_tier: int, defender_sprite: Sprite2D, apply_effects: bool) -> void:
 	if not DamageCalculator.check_accuracy(attacker, defender, move):
 		_popup("Daneben!", defender_sprite.position + Vector2(0, -60), Color.WHITE)
 		_log("  Daneben!")
@@ -349,13 +370,8 @@ func _resolve_hit(attacker: Dictionary, defender: Dictionary, move: MoveData, at
 	var timing_multiplier = ActionCommand.ATTACK_MULTIPLIERS[attack_tier] * defense_multiplier
 	var crit_chance = attacker["luck"] / 4.0 + move.CritRateBonus
 	var is_crit = randf() * 100.0 < crit_chance
-	var hit_count = DamageCalculator.calculate_hit_count(move)
-	var total_damage = 0
-	var info: Dictionary = {}
-
-	for i in range(hit_count):
-		info = DamageCalculator.calculate_damage(attacker, defender, move, timing_multiplier, is_crit)
-		total_damage += info.damage
+	var info = DamageCalculator.calculate_damage(attacker, defender, move, timing_multiplier, is_crit)
+	var total_damage: int = info.damage
 
 	defender["current_hp"] = maxi(0, defender["current_hp"] - total_damage)
 	_update_hp()
@@ -368,12 +384,11 @@ func _resolve_hit(attacker: Dictionary, defender: Dictionary, move: MoveData, at
 		_popup("Volltreffer!", defender_sprite.position + Vector2(0, 40), Color(1, 0.6, 1), 24)
 	if info.get("effectiveness_text", "") != "":
 		details += ", " + info.effectiveness_text
-	if hit_count > 1:
-		details += ", %d Treffer" % hit_count
 	_log("  %d Schaden (%s)" % [total_damage, details])
 
-	_apply_stat_changes(attacker, defender, move)
-	await get_tree().create_timer(0.35).timeout
+	if apply_effects:
+		_apply_stat_changes(attacker, defender, move)
+	await get_tree().create_timer(0.35 if apply_effects else 0.15).timeout
 
 func _defense_text(tier: int) -> String:
 	match tier:
@@ -424,14 +439,32 @@ func _finish_battle(title: String, message: String) -> void:
 # ANIMATION
 # =========================
 
-## Sprung auf den Gegner. Der Aufprall ist genau am Ende (t = 1).
-func _hop(sprite: Sprite2D, from: Vector2, target: Vector2, duration: float) -> Tween:
+## Platzhalter-Animation: Sprung auf den Gegner, Aufprall genau beim ersten Zeitpunkt,
+## danach für jeden weiteren Zeitpunkt kurz ausholen und wieder zuschlagen.
+## Wenn es echte Animationen gibt, ersetzt die Animation das hier und TimingHits wird an sie angepasst.
+func _attack_animation(sprite: Sprite2D, from: Vector2, target: Vector2, hit_times: Array[float]) -> Tween:
 	var hit_pos = target.lerp(from, 0.18)
+	var windup_pos = target.lerp(from, 0.35)
 	var tween = create_tween()
 	tween.tween_method(
 		func(t: float): sprite.position = from.lerp(hit_pos, t) + Vector2(0, -sin(t * PI) * 90.0),
-		0.0, 1.0, duration
+		0.0, 1.0, hit_times[0]
 	)
+	for i in range(1, hit_times.size()):
+		var gap = hit_times[i] - hit_times[i - 1]
+		tween.tween_property(sprite, "position", windup_pos, gap * 0.6).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "position", hit_pos, gap * 0.4).set_ease(Tween.EASE_IN)
+	return tween
+
+## Platzhalter-Animation für Status-Attacken: auf der Stelle hüpfen, Landung = Zeitpunkt
+func _status_animation(sprite: Sprite2D, home: Vector2, hit_times: Array[float]) -> Tween:
+	var tween = create_tween()
+	var previous = 0.0
+	for time in hit_times:
+		var duration = time - previous
+		tween.tween_property(sprite, "position:y", home.y - 50.0, duration * 0.5).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "position:y", home.y, duration * 0.5).set_ease(Tween.EASE_IN)
+		previous = time
 	return tween
 
 func _shake(sprite: Sprite2D) -> void:

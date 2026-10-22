@@ -11,3 +11,4 @@ Damage = 100
 Accuracy = 70
 HasQTE = true
 QTEType = 1
+TimingHits = Array[float]([0.55, 1.05])

@@ -12,3 +12,4 @@ Accuracy = 100
 MaxPP = 25
 UserAttackChange = 1
 TargetDefenseChange = -1
+TimingHits = Array[float]([0.9])

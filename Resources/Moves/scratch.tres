@@ -8,3 +8,4 @@ MoveName = "Kratzer"
 MoveType = 1
 Damage = 30
 MaxPP = 20
+TimingHits = Array[float]([0.7])

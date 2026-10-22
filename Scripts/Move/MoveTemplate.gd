@@ -19,9 +19,26 @@ class_name MoveData
 @export var Contact: bool = true
 
 # =========================
-# QUICK TIME EVENT (QTE)
+# TIMING (ACTION COMMAND)
 # =========================
-@export_group("Quick Time Event")
+## Jede Attacke hat ein Timing (5 Stufen, Scripts/Battle/action_command.gd).
+## Hier stellst du ein, WANN gedrückt werden muss, passend zur Animation der Attacke.
+@export_group("Timing")
+
+## Zeitpunkte der Treffer in Sekunden ab Start der Animation, ein Eintrag = ein Tastendruck.
+## Beispiel: [0.8] = ein Aufprall nach 0,8 s. [0.5, 0.9, 1.2] = drei Drücke.
+## Mehrfachtreffer (IsMultiHit): jeder Eintrag ist ein eigener Treffer mit eigener Stufe.
+## Sonst wird der Durchschnitt aller Drücke für den einen Treffer genommen.
+@export var TimingHits: Array[float] = [0.8]
+
+## Größe der Zeitfenster nur für diese Attacke: > 1 = leichter, < 1 = schwerer
+@export_range(0.25, 3.0) var TimingWindowScale: float = 1.0
+
+# =========================
+# QUICK TIME EVENT (QTE), ALT
+# =========================
+## Altes System, wird nur noch vom DEBUG-Kampf benutzt. Das neue Timing steht oben in "Timing".
+@export_group("Quick Time Event (alt)")
 @export var HasQTE: bool = false
 
 @export var QTEType: Enums.QTEType = Enums.QTEType.NONE
@@ -58,3 +75,17 @@ class_name MoveData
 @export var MaxHits: int = 1
 
 @export_multiline var BattleText: String  # Custom text when move is used
+
+# =========================
+# HELPERS
+# =========================
+
+## Trefferzeitpunkte sortiert und ohne negative Werte. Leer = ein Treffer nach 0,8 s.
+func get_timing_hits() -> Array[float]:
+	var hits: Array[float] = []
+	for time in TimingHits:
+		hits.append(maxf(time, 0.05))
+	if hits.is_empty():
+		hits.append(0.8)
+	hits.sort()
+	return hits
