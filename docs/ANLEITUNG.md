@@ -115,11 +115,42 @@ Attacken sind .tres-Dateien in `Resources/Moves/` mit dem Skript `Scripts/Move/M
 | `Priority` | -1, 0 oder 1. Höher = greift zuerst an |
 | `InflictsStatus`, `status_effect`, `StatusChance` | Statuseffekt aus `Resources/StatusEffects/` mit Chance in % |
 | `Contact` | Berührt das Ziel (wichtig für manche Fähigkeiten) |
-| Gruppe **Quick Time Event** | Altes Timing-System. Das neue Timing (5 Stufen, immer aktiv) steckt in `Scripts/Battle/action_command.gd` und wird gerade im Prototyp getestet |
+| Gruppe **Timing** | Wann gedrückt werden muss, passend zur Animation. Siehe unten "Timing einstellen" |
+| Gruppe **Quick Time Event (alt)** | Altes System, nur noch für den DEBUG-Kampf. Für neue Attacken ignorieren |
 | Gruppe **Special Effects** | Rückstoß (`Recoil`), Absorbieren (`Drain`), Zurückschrecken, Krit-Bonus, Werte-Änderungen in Stufen (-6 bis +6), Mehrfachtreffer |
 | `BattleText` | Eigener Text beim Einsetzen |
 
 3. Die Attacke einem Monster geben: im Monster unter `level_up_moves` einen Eintrag mit Level und dieser Attacke anlegen.
+
+### Timing einstellen
+
+Jede Attacke hat ein Timing mit 5 Stufen (Schlecht, Okay, Gut, Sehr gut, Exzellent), auch Status-Attacken. Wann gedrückt werden muss, stellst du pro Attacke in der Gruppe **Timing** ein:
+
+| Feld | Bedeutung |
+|---|---|
+| `TimingHits` | Liste der Aufprall-Zeitpunkte in **Sekunden ab Start der Animation**. Ein Eintrag = ein Tastendruck |
+| `TimingWindowScale` | Wie großzügig die Zeitfenster bei dieser Attacke sind. 1 = normal, 1.5 = leichter, 0.7 = schwerer |
+
+Beispiele aus dem Projekt:
+
+| Attacke | `TimingHits` | Was passiert |
+|---|---|---|
+| Kratzer | `[0.7]` | Ein Druck, Aufprall nach 0,7 s |
+| Feuer Peitsche | `[0.55, 1.05]` | Ausholen und Peitschenknall, zwei Drücke |
+| Rankenhieb | `[0.6, 0.85, 1.05]` | Mehrfachtreffer, drei Peitschenhiebe |
+
+So passt du das Timing an eine Animation an:
+
+1. Animation im AnimationPlayer öffnen und die Zeitleiste bis zu dem Frame schieben, in dem die Attacke trifft. Die Zeit oben in der Zeitleiste (z. B. `0.85`) ist dein Wert.
+2. Für jeden weiteren Treffer genauso, dann alle Zeiten in `TimingHits` eintragen (Reihenfolge ist egal, sie werden sortiert).
+3. Im Timing-Prototyp testen (`Szene/Prototype/timed_battle_prototype.tscn`, **F6**). Der Ring schließt sich genau zu deinen Zeitpunkten. Im Kampf-Log steht, wie viele Millisekunden du zu früh (−) oder zu spät (+) warst. Bist du immer z. B. +40 ms daneben, obwohl es sich richtig anfühlt, den Wert um 0.04 erhöhen.
+
+Regeln:
+
+- **Mehrfachtreffer** (`IsMultiHit` an): jeder Eintrag ist ein eigener Treffer mit eigener Stufe und eigenem Schaden. Die Anzahl der Treffer ist die Anzahl der Einträge.
+- **Sonst** zählt der Durchschnitt aller Drücke für den einen Treffer. So kann eine starke Attacke z. B. erst ein Ausholen und dann den Schlag abfragen.
+- Beim **Verteidigen** gelten dieselben Zeitpunkte, denn du reagierst auf dieselbe Animation des Gegners.
+- Bisher gibt es nur Platzhalter-Animationen im Prototyp (Sprung, Ausholen, Zuschlagen), die sich nach `TimingHits` richten. Mit echten Animationen ist es umgekehrt: Die Animation ist fest, und du stellst `TimingHits` auf sie ein.
 
 ---
 
@@ -186,7 +217,7 @@ Tipp für den Look: Kamera-Neigung ca. 30–40°, Figuren leicht größer als di
 Der Kampf wird in einer eigenen 3D-Szene gezeigt, mit der Kamera **schräg von oben und von der Seite**, sodass man beide Seiten gleichzeitig sieht (wie Mario & Luigi).
 
 - Kampf-Logik: `Scripts/Battle/battle_system.gd`, `damage_calculator.gd`, `type_chart.gd`, `merge_system.gd` (Fusion).
-- Timing (5 Stufen, Angriff und Verteidigung): `Scripts/Battle/action_command.gd`.
+- Timing (5 Stufen, Angriff und Verteidigung): `Scripts/Battle/action_command.gd`. Die Zeitpunkte kommen aus jeder Attacke (`TimingHits`, siehe Kapitel 3).
 - Neue Kampfszene (Platzhalter): `Scripts/Battle/battle_scene.gd`, `battle_camera.gd`, `enemy_ai.gd`, `catch_system.gd`, `Scripts/UI/battle_hud.gd`. Oben in `battle_scene.gd` steht, welche Nodes die Szene braucht.
 - Zum Testen gibt es bis dahin `Szene/DEBUg/debug_battlefield.tscn` und den Timing-Prototyp `Szene/Prototype/timed_battle_prototype.tscn`.
 
