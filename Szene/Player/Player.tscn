@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://bcd6ekoqqn0ks"]
+
+[ext_resource type="Texture2D" uid="uid://daihs7hskb2e2" path="res://icon.svg" id="1_e0a86"]
+
+[node name="Player" type="Node3D" unique_id=1835962092]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.013997555, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=493091280]
+transform = Transform3D(1, 0, 0, 0, 0.910338, 0.41386575, 0, -0.41386575, 0.910338, 0, 1.1086794, 2.0132718)
+
+[node name="Sprite3D" type="Sprite3D" parent="." unique_id=1575988662]
+transform = Transform3D(1, 0, 0, 0, 0.9314336, 0.36391127, 0, -0.36391127, 0.9314336, 0, 0, 0)
+texture = ExtResource("1_e0a86")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Sprite3D" unique_id=913535782]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.013997555, 0, 0)
