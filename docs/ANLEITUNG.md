@@ -53,7 +53,7 @@ Neue Szenen bitte so ablegen (Ordner beim ersten Mal im Editor anlegen):
 
 | Was | Szene | Skript |
 |---|---|---|
-| Maps (Dörfer, Routen, Dungeons) | `Szene/Maps/<name>.tscn` | meist keins nötig |
+| Maps (Dörfer, Routen, Dungeons) | `Szene/World/<Region>/<name>.tscn` | meist keins nötig |
 | Spielerfigur, NPC-Vorlage | `Szene/Overworld/` | `Scripts/Overworld/` |
 | Kampfszene | `Szene/Battle/battle_scene.tscn` | `Scripts/Battle/battle_scene.gd` |
 | Menüs und HUD | `Szene/UI/` | `Scripts/UI/` |
@@ -189,26 +189,11 @@ Genau wie oben, nur in anderen Ordnern:
 
 ---
 
-## 6. Neue Map (2.5D)
+## 6. Neue Map (2D)
 
-Das Spiel ist **2.5D**: die Welt ist 3D, Figuren und Monster sind flache 2D-Sprites, die immer zur Kamera schauen (wie Paper Mario oder Octopath Traveler). Die Kamera schaut schräg von oben.
+Die Overworld ist **2D von oben** wie bei den klassischen Pokémon-Spielen: `Node2D` + `TileMapLayer` mit dem TileSet `Assets/TileSets/grassland.tres`.
 
-Die Skripte dafür sind noch Platzhalter. So wird eine Map aufgebaut, sobald sie fertig sind:
-
-1. **Szene anlegen:** *Scene → New Scene*, Root-Node `Node3D`, speichern als `Szene/Maps/<name>.tscn` (z. B. `route_1.tscn`).
-2. **Licht und Himmel:** `WorldEnvironment` und `DirectionalLight3D` hinzufügen (schräg von oben, Schatten an).
-3. **Boden bauen**, eine der beiden Varianten:
-   - **GridMap** (empfohlen): eine MeshLibrary mit Boden-, Gras-, Wasser- und Wegstücken bauen (die Grassland-Tiles aus `Assets/Sprites/TileSet/Grassland/` können als Texturen dienen) und die Map wie mit Lego-Steinen malen.
-   - **Einfach:** `MeshInstance3D` mit einer `PlaneMesh` und Textur, dazu `StaticBody3D` + `CollisionShape3D`, damit man nicht durchfällt.
-4. **Deko:** Bäume, Büsche, Schilder als `Sprite3D` (Billboard auf **Y-Billboard** stellen) oder als kleine 3D-Modelle. Bei `Sprite3D` unter *Flags* **Shaded** an und **Alpha Cut** auf *Discard* stellen, dann werfen sie Schatten und sehen nicht verschwommen aus.
-5. **Spieler:** `Szene/Overworld/player.tscn` als Instanz einfügen (*Instantiate Child Scene*), dazu eine `Camera3D` mit `Scripts/Overworld/overworld_camera.gd`.
-6. **Spawn-Punkte:** pro Eingang einen `Marker3D` mit sprechendem Namen (`start`, `von_route_1`, ...).
-7. **Ausgänge:** `Area3D` + `CollisionShape3D` mit `Scripts/Overworld/map_transition.gd`. Im Inspector `target_map` (Ziel-Szene) und `target_spawn` (Name des Marker3D in der Ziel-Map) setzen.
-8. **Hohes Gras:** `Area3D` + `CollisionShape3D` mit `Scripts/Overworld/encounter_zone.gd`. Dazu eine `EncounterTable` in `Resources/Encounters/` anlegen (welche Monster, welche Level, wie oft) und zuweisen.
-9. **NPCs und Trainer:** `CharacterBody3D` + `Sprite3D` + `CollisionShape3D` mit `Scripts/Overworld/npc.gd`. Dialog-Zeilen im Inspector eintragen, für Trainer `is_trainer` an.
-10. **Musik:** im Skript der Map oder beim Betreten `AudioPlayer.play_music_level("route_1.mp3")`.
-
-Tipp für den Look: Kamera-Neigung ca. 30–40°, Figuren leicht größer als die Tiles, warmes Licht. Paper-Mario-Gefühl entsteht vor allem durch flache Figuren mit dickem Rand und weiche Schatten darunter.
+Schritt für Schritt (Terrain malen, Kollision, Y-Sort, Ausgänge): **[tutorials/karten-mit-terrain.md](tutorials/karten-mit-terrain.md)**. Fertiges Beispiel: `Szene/World/Beispiel/beispiel_route.tscn`.
 
 ---
 

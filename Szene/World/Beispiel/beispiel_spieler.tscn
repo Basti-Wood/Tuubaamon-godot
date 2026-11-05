@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/Overworld/beispiel_spieler.gd" id="1_oh7y2"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="2_xg0yd"]
+[ext_resource type="Script" path="res://Scripts/Overworld/overworld_camera.gd" id="3_qsp80"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_k5yqe"]
+size = Vector2(10, 6)
+
+[node name="BeispielSpieler" type="CharacterBody2D" unique_id=769332954 groups=["player"]]
+script = ExtResource("1_oh7y2")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1352611318]
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("2_xg0yd")
+offset = Vector2(0, -64)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1578359152]
+position = Vector2(0, -3)
+shape = SubResource("RectangleShape2D_k5yqe")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1006036020]
+zoom = Vector2(3, 3)
+position_smoothing_enabled = true
+script = ExtResource("3_qsp80")

@@ -1,16 +1,17 @@
-extends Camera3D
+extends Camera2D
 
-## PLATZHALTER - Kamera für die Overworld im 2.5D-Stil.
-## Schaut schräg von oben (ähnlich Paper Mario / Octopath), folgt dem Spieler weich.
+## Kamera für die Overworld (2D). Als Kind an den Spieler hängen, dann folgt sie ihm.
+## Bleibt innerhalb der Map: nimmt dafür den TileMapLayer in der Gruppe "boden".
 
-@export var target_path: NodePath
-@export var offset := Vector3(0, 6, 8)      # Höhe und Abstand hinter dem Spieler
-@export var follow_speed: float = 5.0
-
-func _process(delta: float) -> void:
-	# TODO:
-	# var target := get_node(target_path)
-	# global_position = global_position.lerp(target.global_position + offset, follow_speed * delta)
-	# look_at(target.global_position)   # oder feste Neigung von ca. -35° auf rotation_degrees.x
-	# Grenzen der Map beachten (Kamera nicht über den Rand fahren lassen)
-	pass
+func _ready() -> void:
+	var boden := get_tree().get_first_node_in_group("boden") as TileMapLayer
+	if boden == null:
+		return
+	var rect := boden.get_used_rect()
+	var tile := boden.tile_set.tile_size
+	var start := boden.global_position + Vector2(rect.position * tile)
+	var ende := start + Vector2(rect.size * tile)
+	limit_left = int(start.x)
+	limit_top = int(start.y)
+	limit_right = int(ende.x)
+	limit_bottom = int(ende.y)

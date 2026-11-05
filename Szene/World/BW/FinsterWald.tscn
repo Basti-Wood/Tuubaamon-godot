@@ -1,3 +1,3 @@
 [gd_scene format=3 uid="uid://drrdfvytqgk8n"]
 
-[node name="FinsterWald" type="Node3D" unique_id=39348358]
+[node name="FinsterWald" type="Node2D" unique_id=39348358]
