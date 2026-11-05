@@ -1,9 +1,14 @@
 extends Node
 
-## PLATZHALTER - Wechsel zwischen Maps und zwischen Overworld und Kampf.
-## Später als Autoload "SceneSwitcher" eintragen.
+## Autoload "SceneSwitcher": Wechsel zwischen Maps und zwischen Overworld und Kampf.
+## Der Map-Wechsel (go_to_map) ist noch PLATZHALTER.
 
-# TODO: var _overworld_scene: Node     # wird während des Kampfes versteckt statt gelöscht
+signal battle_ended(result: String)    # "win", "lose", "caught", "fled"
+
+const BATTLE_SCENE := "res://Szene/Battle/battle_scene.tscn"
+
+var _overworld: Node      # wird während des Kampfes pausiert und versteckt statt gelöscht
+var _battle: Node
 
 func go_to_map(map_path: String, spawn_name: String) -> void:
 	# TODO:
@@ -15,14 +20,26 @@ func go_to_map(map_path: String, spawn_name: String) -> void:
 	pass
 
 func start_battle(enemy_team: Array, is_trainer := false) -> void:
-	# TODO:
-	# Übergangs-Animation (Paper-Mario-Stil, z. B. Bildschirm zerbricht/dreht sich)
-	# Overworld pausieren und verstecken (nicht löschen, damit die Position erhalten bleibt)
-	# Szene/Battle/battle_scene.tscn instanziieren und battle_scene.setup(GameState.party, enemy_team, is_trainer)
-	# auf battle_scene.battle_finished warten -> end_battle(result)
-	pass
+	if _battle:
+		return
+	# TODO: Übergangs-Animation (Paper-Mario-Stil, z. B. Bildschirm zerbricht/dreht sich)
+	_overworld = get_tree().current_scene
+	_overworld.process_mode = Node.PROCESS_MODE_DISABLED
+	_overworld.set("visible", false)
+
+	_battle = load(BATTLE_SCENE).instantiate()
+	get_tree().root.add_child(_battle)
+	_battle.battle_finished.connect(end_battle)
+	_battle.setup(GameState.party, enemy_team, is_trainer)
 
 func end_battle(result: String) -> void:
-	# TODO: Kampfszene entfernen, Overworld wieder anzeigen und fortsetzen
-	# bei Niederlage: zum letzten Heilpunkt
-	pass
+	_battle.queue_free()
+	_battle = null
+	_overworld.process_mode = Node.PROCESS_MODE_INHERIT
+	_overworld.set("visible", true)
+
+	if result == "lose":
+		# TODO: zum letzten Heilpunkt (go_to_map). Bis dahin wird das Team einfach geheilt.
+		for monster in GameState.party:
+			monster.current_hp = monster.get_max_hp()
+	battle_ended.emit(result)

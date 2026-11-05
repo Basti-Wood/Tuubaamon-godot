@@ -10,23 +10,38 @@ class_name MonsterInstance
 @export var level: int = 5
 
 # TODO: @export var current_exp: int = 0
-# TODO: @export var current_hp: int
-# TODO: @export var moves: Array[MoveData] = []     # max. 4
+@export var current_hp: int = 1
+@export var moves: Array[MoveData] = []     # max. 4
 # TODO: @export var move_pp: Array[int] = []
 # TODO: @export var status: StatusEffect = null
-# TODO: @export var amulet: AmuletData                # das Schmuckstück, in dem das Monster wohnt
+@export var amulet: AmuletData                # das Schmuckstück, in dem das Monster wohnt
+
+## Neues Exemplar einer Art, z. B. ein wildes Monster. Lernt die letzten 4 Attacken bis zu seinem Level.
+static func create(species_data: MonsterData, start_level: int) -> MonsterInstance:
+	var monster := MonsterInstance.new()
+	monster.species = species_data
+	monster.level = start_level
+	for entry in species_data.level_up_moves:
+		if entry and entry.move and entry.level <= start_level:
+			monster.moves.append(entry.move)
+	while monster.moves.size() > 4:
+		monster.moves.pop_front()
+	monster.current_hp = monster.get_max_hp()
+	return monster
+
+func is_fainted() -> bool:
+	return current_hp <= 0
 
 func get_display_name() -> String:
 	return nickname if nickname != "" else (species.name if species else "???")
 
 func get_max_hp() -> int:
-	# TODO: Formel wie Pokémon: ((2 * species.base_hp * level) / 100) + level + 10
-	#       plus Bonus aus dem Amulett (amulet.bonus_hp)
-	return 1
+	return DamageCalculator.calculate_max_hp(species.base_hp, level) + (amulet.bonus_hp if amulet else 0)
 
 func get_stat(stat_name: String) -> int:
-	# TODO: ((2 * base * level) / 100) + 5, plus Amulett-Bonus. stat_name: "attack", "defense", ...
-	return 1
+	# stat_name: "attack", "defense", "special_attack", "special_defense", "speed"
+	var bonus: int = amulet.get("bonus_" + stat_name) if amulet else 0
+	return DamageCalculator.calculate_stat(species.get("base_" + stat_name), level) + bonus
 
 func gain_exp(amount: int) -> void:
 	# TODO: current_exp += amount

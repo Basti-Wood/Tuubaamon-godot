@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AmuletData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Item/amulet_data.gd" id="1_amulet"]
+
+[resource]
+script = ExtResource("1_amulet")
+ItemName = "Kupfer-Rohling"
+Description = "Leeres Schmuckstück aus Kupfer. Damit kann man ein geschwächtes Monster bannen."
+Category = 2
+Consumable = true
+catch_bonus = 1.0

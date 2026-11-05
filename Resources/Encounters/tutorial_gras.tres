@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="EncounterTable" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Overworld/encounter_table.gd" id="1_table"]
+[ext_resource type="Script" path="res://Scripts/Overworld/encounter_entry.gd" id="2_entry"]
+[ext_resource type="Script" path="res://Scripts/Monster/MonsterTemplate.gd" id="3_monster"]
+[ext_resource type="Script" path="res://Scripts/Move/MoveTemplate.gd" id="4_move"]
+[ext_resource type="Script" path="res://Scripts/Move/LevelUpMoves.gd" id="5_levelmove"]
+
+[sub_resource type="Resource" id="Move_rempler"]
+script = ExtResource("4_move")
+MoveName = "Rempler"
+MoveType = 1
+AttackType = 0
+Damage = 40
+TimingHits = Array[float]([0.7])
+
+[sub_resource type="Resource" id="LevelMove_rempler"]
+script = ExtResource("5_levelmove")
+level = 1
+move = SubResource("Move_rempler")
+
+[sub_resource type="Resource" id="Monster_testmon"]
+script = ExtResource("3_monster")
+name = "Testmon"
+base_hp = 45
+base_attack = 45
+base_defense = 40
+base_special_attack = 40
+base_special_defense = 40
+base_speed = 45
+catch_rate = 60.0
+level_up_moves = Array[ExtResource("5_levelmove")]([SubResource("LevelMove_rempler")])
+
+[sub_resource type="Resource" id="Entry_testmon"]
+script = ExtResource("2_entry")
+monster = SubResource("Monster_testmon")
+min_level = 3
+max_level = 5
+weight = 10
+
+[resource]
+script = ExtResource("1_table")
+entries = Array[ExtResource("2_entry")]([SubResource("Entry_testmon")])

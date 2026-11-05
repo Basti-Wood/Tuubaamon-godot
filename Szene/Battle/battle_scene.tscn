@@ -1,0 +1,75 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Battle/battle_scene.gd" id="1_scene"]
+[ext_resource type="Script" path="res://Scripts/Battle/action_command.gd" id="2_cmd"]
+[ext_resource type="Script" path="res://Scripts/Battle/Prototype/timing_ring.gd" id="3_ring"]
+[ext_resource type="Resource" path="res://Resources/Items/Amulets/Rohling_Kupfer.tres" id="4_amulet"]
+[ext_resource type="Theme" path="res://Assets/UI/main_theme.tres" id="5_theme"]
+
+[node name="BattleScene" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_scene")
+catch_amulet = ExtResource("4_amulet")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.45, 0.7, 0.45, 1)
+
+[node name="EnemySprite" type="Sprite2D" parent="."]
+position = Vector2(860, 200)
+scale = Vector2(1, 1)
+
+[node name="PlayerSprite" type="Sprite2D" parent="."]
+position = Vector2(300, 400)
+scale = Vector2(1, 1)
+
+[node name="EnemyLabel" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 440.0
+offset_bottom = 70.0
+theme = ExtResource("5_theme")
+
+[node name="EnemyHP" type="ProgressBar" parent="."]
+offset_left = 40.0
+offset_top = 75.0
+offset_right = 440.0
+offset_bottom = 100.0
+show_percentage = false
+
+[node name="PlayerLabel" type="Label" parent="."]
+offset_left = 712.0
+offset_top = 380.0
+offset_right = 1112.0
+offset_bottom = 410.0
+theme = ExtResource("5_theme")
+
+[node name="PlayerHP" type="ProgressBar" parent="."]
+offset_left = 712.0
+offset_top = 415.0
+offset_right = 1112.0
+offset_bottom = 440.0
+show_percentage = false
+
+[node name="Info" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 480.0
+offset_right = 1112.0
+offset_bottom = 540.0
+theme = ExtResource("5_theme")
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="."]
+offset_left = 40.0
+offset_top = 560.0
+offset_right = 1112.0
+offset_bottom = 610.0
+theme = ExtResource("5_theme")
+
+[node name="TimingRing" type="Node2D" parent="."]
+script = ExtResource("3_ring")
+
+[node name="ActionCommand" type="Node" parent="."]
+script = ExtResource("2_cmd")

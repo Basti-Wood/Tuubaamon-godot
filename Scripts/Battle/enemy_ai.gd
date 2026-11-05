@@ -1,16 +1,13 @@
 extends RefCounted
+class_name EnemyAI
 
-## PLATZHALTER - Gegner-KI: welche Attacke der Gegner wählt.
+## Gegner-KI: welche Attacke der Gegner wählt und wie gut er sein Timing trifft.
 
-func choose_move(attacker, defender) -> MoveData:
-	# TODO:
-	# einfache Variante: zufällige Attacke mit AP > 0
-	# bessere Variante: Attacken nach erwartetem Schaden gewichten
-	#   (TypeChart.get_effectiveness, Stärke, Genauigkeit)
-	# Trainer-KI kann zusätzlich Items benutzen oder Monster wechseln
-	return null
+## Einfache Variante: zufällige Attacke.
+## TODO: bessere Variante: Attacken nach erwartetem Schaden gewichten (TypeChart.get_effectiveness)
+static func choose_move(moves: Array[MoveData]) -> MoveData:
+	return moves.pick_random()
 
-func roll_timing_tier(attacker) -> int:
-	# TODO: Gegner treffen ihr Timing auch in 5 Stufen.
-	# ActionCommand.roll_enemy_tier(precision) benutzen, precision aus einem Stat des Gegners
-	return 0
+## Gegner treffen ihr Timing auch in 5 Stufen. precision kommt von der KI-Stufe (0.0 .. 1.0).
+static func roll_timing_tier(precision: float) -> int:
+	return ActionCommand.roll_enemy_tier(precision)
