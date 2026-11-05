@@ -36,6 +36,8 @@ class_name MonsterData
 @export var base_special_attack: int = 1
 @export var base_special_defense: int = 1
 @export var base_speed: int = 1
+## Glück: Krit-Chance (getrennt vom Timing)
+@export var base_luck: int = 1
 
 
 # =========================

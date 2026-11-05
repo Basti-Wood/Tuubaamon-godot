@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MoveData" format=3]
+
+[ext_resource type="Script" uid="uid://cvmlovrur1i4e" path="res://Scripts/Move/MoveTemplate.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+MoveName = "Lichtstrahl"
+Description = "Ein heller Strahl. Drücke genau, wenn er aufprallt."
+MoveType = 19
+AttackType = 1
+Damage = 60
+MaxPP = 15
+Contact = false
+TimingHits = Array[float]([0.8])

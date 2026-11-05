@@ -30,6 +30,7 @@ enum Type {
 	DARK,
 	STEEL,
 	FAIRY,
+	LICHT,
 }
 
 # =========================

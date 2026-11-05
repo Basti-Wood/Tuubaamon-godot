@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="MonsterData" format=3]
+
+[ext_resource type="Script" uid="uid://ceb1nqbnp3wms" path="res://Scripts/Monster/MonsterTemplate.gd" id="1_mon"]
+[ext_resource type="Script" uid="uid://54icxsndp0po" path="res://Scripts/Move/LevelUpMoves.gd" id="2_lum"]
+[ext_resource type="Resource" path="res://Resources/Moves/Lichtstrahl.tres" id="3_licht"]
+[ext_resource type="Resource" path="res://Resources/Moves/Funkenregen.tres" id="4_funken"]
+
+[sub_resource type="Resource" id="lum_1"]
+script = ExtResource("2_lum")
+level = 1
+move = ExtResource("3_licht")
+
+[sub_resource type="Resource" id="lum_2"]
+script = ExtResource("2_lum")
+level = 8
+move = ExtResource("4_funken")
+
+[resource]
+script = ExtResource("1_mon")
+name = "Glimmi"
+monster_id = 1
+description = "Ein kleines Lichtwesen. Beispielmonster aus dem Tutorial."
+primary_type = 19
+base_hp = 45
+base_attack = 40
+base_defense = 45
+base_special_attack = 65
+base_special_defense = 55
+base_speed = 60
+base_luck = 70
+base_exp_yield = 50
+growth_rate = 0
+catch_rate = 45.0
+level_up_moves = Array[ExtResource("2_lum")]([SubResource("lum_1"), SubResource("lum_2")])
+developer_notes = "Tutorial-Beispiel. Kann gelöscht werden, sobald es echte Monster gibt."

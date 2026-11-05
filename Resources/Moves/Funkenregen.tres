@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MoveData" format=3]
+
+[ext_resource type="Script" uid="uid://cvmlovrur1i4e" path="res://Scripts/Move/MoveTemplate.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+MoveName = "Funkenregen"
+Description = "Drei Lichtfunken, jeder Treffer hat sein eigenes Timing."
+MoveType = 19
+AttackType = 1
+Damage = 20
+MaxPP = 10
+Contact = false
+TimingHits = Array[float]([0.4, 0.7, 1.0])
+TimingWindowScale = 1.2
+IsMultiHit = true
+MinHits = 3
+MaxHits = 3
