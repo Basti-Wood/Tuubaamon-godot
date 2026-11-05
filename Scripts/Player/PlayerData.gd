@@ -54,6 +54,20 @@ class_name PlayerData
 @export var merged_monster: MonsterData = null
 
 # =========================
+# FÄHIGKEITEN (Fusion, Klettern, Zerschmettern ...)
+# =========================
+
+## Freigeschaltete Spieler-Fähigkeiten als Text-IDs, z. B. "fusion", "zerschmettern".
+@export var abilities: Array[String] = []
+
+func unlock_ability(id: String) -> void:
+	if not abilities.has(id):
+		abilities.append(id)
+
+func has_ability(id: String) -> bool:
+	return abilities.has(id)
+
+# =========================
 # EQUIPMENT (optional future expansion)
 # =========================
 
