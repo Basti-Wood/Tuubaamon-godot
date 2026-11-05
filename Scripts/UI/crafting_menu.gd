@@ -1,28 +1,23 @@
 extends PanelContainer
 class_name CraftingMenu
 
-## Einfaches Werkstatt-Menü: links Rezepte, rechts Zutaten, Gravur, Farbe und "Herstellen".
+## Einfaches Werkstatt-Menü: links Rezepte, rechts Zutaten und "Herstellen".
 
 var recipes: Array[CraftingRecipe] = []
-var bag: Dictionary = {}
 
 var _list := ItemList.new()
 var _info := Label.new()
-var _engraving := LineEdit.new()
-var _color := ColorPickerButton.new()
 var _craft := Button.new()
 
 func _ready() -> void:
 	var row := HBoxContainer.new()
 	var right := VBoxContainer.new()
 	_list.custom_minimum_size = Vector2(200, 200)
-	_engraving.placeholder_text = "Gravur (nur Schmuck)"
-	_color.color = Color.WHITE
 	_craft.text = "Herstellen"
 	var close := Button.new()
 	close.text = "Schließen"
 	close.pressed.connect(hide)
-	for c in [_info, _engraving, _color, _craft, close]:
+	for c in [_info, _craft, close]:
 		right.add_child(c)
 	row.add_child(_list)
 	row.add_child(right)
@@ -31,9 +26,8 @@ func _ready() -> void:
 	_craft.pressed.connect(_on_craft)
 	hide()
 
-func open(new_recipes: Array[CraftingRecipe], new_bag: Dictionary) -> void:
+func open(new_recipes: Array[CraftingRecipe]) -> void:
 	recipes = new_recipes
-	bag = new_bag
 	_list.clear()
 	for r in recipes:
 		_list.add_item(r.recipe_name)
@@ -54,15 +48,11 @@ func _refresh() -> void:
 		return
 	var text := ""
 	for item in r.ingredients:
-		text += "%s: %d / %d\n" % [item.ItemName, bag.get(item, 0), r.ingredients[item]]
+		text += "%s: %d / %d\n" % [item.ItemName, GameState.item_count(item), r.ingredients[item]]
 	_info.text = text
-	_craft.disabled = not r.can_craft(bag)
+	_craft.disabled = not r.can_craft()
 
 func _on_craft() -> void:
-	var item := _selected().craft(bag)
-	if item is AmuletData:
-		item.engraving = _engraving.text
-		item.color = _color.color
-	if item:
-		print("Hergestellt: ", item.ItemName)
+	if _selected().craft():
+		print("Hergestellt: ", _selected().result.ItemName)
 	_refresh()

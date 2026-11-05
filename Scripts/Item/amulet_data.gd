@@ -3,6 +3,8 @@ class_name AmuletData
 
 ## Schmuck/Amulett, in dem Monster gefangen werden (wie bei Huntik).
 ## Leerer Schmuck = Rohling. Material = Stufe, jede Stufe bringt eine Fassung mehr.
+## Jedes gefangene Monster braucht sein EIGENES Exemplar: amulet.duplicate(),
+## sonst wird beim Aufwerten jedes Monster mit demselben Amulett mit aufgewertet.
 
 enum Form { RING, AMULETT, ARMREIF, OHRRING }
 enum Tier { KUPFER, SILBER, GOLD, RELIKT }
@@ -14,8 +16,6 @@ enum Tier { KUPFER, SILBER, GOLD, RELIKT }
 @export var gems: Array[GemData] = []
 ## Kosten pro Aufwertung: Index 0 = Kupfer→Silber, 1 = Silber→Gold, 2 = Gold→Relikt.
 @export var upgrade_recipes: Array[CraftingRecipe] = []
-## Gefangenes Monster. null = Rohling.
-@export var monster: MonsterData = null
 
 func sockets() -> int:
 	return tier + 1
@@ -23,13 +23,14 @@ func sockets() -> int:
 func catch_bonus() -> float:
 	return 1.0 + tier * 0.25
 
-func can_upgrade(bag: Dictionary) -> bool:
-	return tier < Tier.RELIKT and tier < upgrade_recipes.size() and upgrade_recipes[tier].can_craft(bag)
+func can_upgrade() -> bool:
+	return tier < Tier.RELIKT and tier < upgrade_recipes.size() and upgrade_recipes[tier].can_craft()
 
-func upgrade(bag: Dictionary) -> bool:
-	if not can_upgrade(bag):
+## Eine Stufe aufwerten, verbraucht Material aus GameState. false, wenn es nicht geht.
+func upgrade() -> bool:
+	if not can_upgrade():
 		return false
-	upgrade_recipes[tier].consume(bag)
+	upgrade_recipes[tier].consume()
 	tier += 1
 	return true
 

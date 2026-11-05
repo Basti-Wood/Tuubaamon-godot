@@ -14,8 +14,8 @@ Hier lernst du Materialien, Rezepte, die Werkstatt und das Aufwerten.
 | `Scripts/Crafting/crafting_station.gd` | `CraftingStation`: Werkstatt in der Map |
 | `Szene/Prototype/crafting_demo.tscn` | Demo zum Ausprobieren (F6) |
 
-Das Inventar ist hier ein einfaches Dictionary `{ ItemData: Anzahl }` (im Code `bag`).
-Sobald es das echte Inventar gibt, gibst du stattdessen das weiter.
+Material kommt aus dem Inventar in `GameState` (siehe `items-menues-speichern.md`).
+Fertige Beispiele: `Resources/Materials/`, `Resources/Recipes/`, `Resources/Items/Kupfer_Amulett.tres` und `Rubin.tres`.
 
 ## 1. Demo ausprobieren
 
@@ -28,7 +28,7 @@ Aufwerten: true | Stufe: SILBER | Fassungen: 2
 Angriff-Bonus: 5 | Fangbonus: 1.25
 ```
 
-Danach siehst du das Werkstatt-Menü. Wähle ein Rezept, gib eine Gravur ein, wähle eine Farbe, klicke **Herstellen**.
+Danach siehst du das Werkstatt-Menü. Wähle ein Rezept und klicke **Herstellen**.
 
 ## 2. Material anlegen
 
@@ -62,11 +62,12 @@ Materialien sind normale Items.
 Herstellen im Code:
 
 ```gdscript
-var amulet = recipe.craft(bag)   # null, wenn Materialien fehlen
+recipe.craft()   # false, wenn Material fehlt
 ```
 
-`craft()` zieht die Zutaten ab und legt das Ergebnis in `bag`.
-Schmuck wird dabei kopiert, damit jedes Stück eigene Gravur, Steine und Stufe hat.
+`craft()` zieht die Zutaten aus `GameState` ab und legt das Ergebnis ins Inventar.
+Rohlinge liegen dort gestapelt. Beim Fangen bekommt jedes Monster ein eigenes Exemplar (`amulet.duplicate()`),
+damit es eigene Gravur, Steine und Stufe hat.
 
 ## 6. Aufwerten
 
@@ -77,7 +78,7 @@ Trag sie im Rohling unter `upgrade_recipes` ein:
 Index 0 = Kupfer→Silber, 1 = Silber→Gold, 2 = Gold→Relikt.
 
 ```gdscript
-if amulet.upgrade(bag):          # zieht Material ab, tier + 1
+if amulet.upgrade():             # zieht Material aus GameState ab, tier + 1
 	print(amulet.sockets())      # Anzahl Fassungen
 amulet.add_gem(rubin)            # false, wenn alle Fassungen voll
 amulet.stat_bonus("bonus_attack")
@@ -86,7 +87,9 @@ amulet.catch_bonus()             # für die Fangformel
 
 ## 7. Eigener Schmuck
 
-Form, Farbe und Gravur stehen direkt im `AmuletData`:
+Form, Farbe und Gravur stehen direkt im `AmuletData`.
+Für jede Form oder Farbe in der Werkstatt legst du einen eigenen Rohling + Rezept an.
+Die Gravur setzt du am eigenen Exemplar, z. B. nach dem Fangen:
 
 ```gdscript
 amulet.form = AmuletData.Form.RING
@@ -94,7 +97,6 @@ amulet.color = Color.GOLD
 amulet.engraving = "Für Tuubaa"
 ```
 
-Das Werkstatt-Menü setzt Gravur und Farbe schon beim Herstellen.
 Neue Formen trägst du im `enum Form` in `amulet_data.gd` ein.
 
 ## 8. Werkstatt in die Map setzen
@@ -103,7 +105,6 @@ Neue Formen trägst du im `enum Form` in `amulet_data.gd` ein.
 2. Als Kind eine `CollisionShape2D` mit Form (z. B. Rechteck vor dem Werktisch).
 3. Ein `CanvasLayer` mit einem `PanelContainer` als Kind anlegen, Script `crafting_menu.gd` drauf.
 4. Bei der Station im Inspector: `recipes` füllen, `menu` auf das Menü zeigen.
-5. Den Inventar-`bag` setzen, z. B. im Map-Script: `$Werkstatt.bag = <Inventar>`.
 
 Der Spieler (`CharacterBody2D`) läuft in die Fläche und drückt **interact**.
 

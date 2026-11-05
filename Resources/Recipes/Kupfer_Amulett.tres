@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CraftingRecipe" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Item/ItemTemplate.gd" id="1_ndlmv"]
+[ext_resource type="Resource" path="res://Resources/Materials/Kupfererz.tres" id="2_31x8c"]
+[ext_resource type="Resource" path="res://Resources/Items/Kupfer_Amulett.tres" id="3_584d6"]
+[ext_resource type="Script" path="res://Scripts/Crafting/crafting_recipe.gd" id="4_wci3r"]
+
+[resource]
+script = ExtResource("4_wci3r")
+recipe_name = "Kupfer-Amulett"
+ingredients = Dictionary[ExtResource("1_ndlmv"), int]({
+ExtResource("2_31x8c"): 3
+})
+result = ExtResource("3_584d6")

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AmuletData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Item/gem_data.gd" id="1_2nlib"]
+[ext_resource type="Script" path="res://Scripts/Item/amulet_data.gd" id="2_2i4xk"]
+[ext_resource type="Script" path="res://Scripts/Crafting/crafting_recipe.gd" id="3_askvd"]
+[ext_resource type="Resource" path="res://Resources/Recipes/Upgrade_Kupfer_Silber.tres" id="4_b3m15"]
+
+[resource]
+script = ExtResource("2_2i4xk")
+upgrade_recipes = Array[ExtResource("3_askvd")]([ExtResource("4_b3m15")])
+ItemName = "Kupfer-Amulett"
+Category = 2
+Consumable = false

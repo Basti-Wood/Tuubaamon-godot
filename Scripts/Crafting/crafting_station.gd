@@ -6,8 +6,6 @@ class_name CraftingStation
 
 @export var recipes: Array[CraftingRecipe] = []
 @export var menu: CraftingMenu
-## Inventar { ItemData: Anzahl }. Später durch das echte Inventar (GameState) ersetzen.
-var bag: Dictionary = {}
 
 var _player_near := false
 
@@ -17,5 +15,5 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _player_near and event.is_action_pressed("interact") and menu and not menu.visible:
-		menu.open(recipes, bag)
+		menu.open(recipes)
 		get_viewport().set_input_as_handled()

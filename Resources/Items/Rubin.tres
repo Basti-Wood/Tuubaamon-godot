@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GemData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Item/gem_data.gd" id="1_lasvr"]
+
+[resource]
+script = ExtResource("1_lasvr")
+bonus_attack = 5
+ItemName = "Rubin"
+Consumable = false

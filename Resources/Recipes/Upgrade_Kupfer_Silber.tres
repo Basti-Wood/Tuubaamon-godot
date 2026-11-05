@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CraftingRecipe" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Item/ItemTemplate.gd" id="1_og176"]
+[ext_resource type="Resource" path="res://Resources/Materials/Silbererz.tres" id="2_f4qbg"]
+[ext_resource type="Script" path="res://Scripts/Crafting/crafting_recipe.gd" id="3_br1ng"]
+
+[resource]
+script = ExtResource("3_br1ng")
+recipe_name = "Aufwerten: Kupfer → Silber"
+ingredients = Dictionary[ExtResource("1_og176"), int]({
+ExtResource("2_f4qbg"): 2
+})
