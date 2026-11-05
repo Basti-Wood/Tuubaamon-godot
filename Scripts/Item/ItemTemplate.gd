@@ -75,3 +75,22 @@ class_name ItemData
 @export var OneTimeUse: bool = false  # For key items
 @export var Tradeable: bool = true
 @export var Droppable: bool = true
+
+# =========================
+# BENUTZEN
+# =========================
+
+## Wendet das Item auf ein Monster an. Gibt false zurück, wenn es nichts bewirkt
+## (dann wird es auch nicht verbraucht). Braucht current_hp und get_max_hp() in MonsterInstance.
+func use_on(monster) -> bool:
+	var max_hp: int = monster.get_max_hp()
+	if RevivesMonster:
+		if monster.current_hp > 0:
+			return false
+		monster.current_hp = maxi(1, int(max_hp * ReviveHPPercent))
+		return true
+	var heal := RestoresHP + int(max_hp * RestoresHPPercent)
+	if heal <= 0 or monster.current_hp <= 0 or monster.current_hp >= max_hp:
+		return false
+	monster.current_hp = mini(monster.current_hp + heal, max_hp)
+	return true

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://cmme3r6bgoks7" path="res://Scripts/Item/ItemTemplate.gd" id="1_axt"]
+
+[resource]
+script = ExtResource("1_axt")
+ItemName = "Axt"
+Description = "Damit kannst du kleine Bäume fällen."
+Category = 4
+UseContext = 1
+Consumable = false
+MaxStack = 1
+OneTimeUse = true
+Tradeable = false
+Droppable = false

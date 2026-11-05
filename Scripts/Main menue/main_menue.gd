@@ -4,12 +4,13 @@ func _ready():
 	AudioPlayer.play_music_level()
 
 func _on_resume_last_safe_pressed() -> void:
-	# TODO: SaveManager.load_game(slot) und danach in die gespeicherte Map wechseln
-	#       (siehe Scripts/Core/save_manager.gd). Button ausblenden, wenn es keinen Spielstand gibt.
-	pass
+	if SaveManager.load_game(1) and GameState.current_map != "":
+		get_tree().change_scene_to_file(GameState.current_map)
+		# TODO: Spieler an GameState.spawn_point setzen (macht später der SceneSwitcher)
 
 func _on_new_game_pressed() -> void:
-	# TODO: GameState zurücksetzen und die Start-Map laden, z. B.
+	GameState.new_game()
+	# TODO: Start-Map laden, z. B.
 	#       SceneSwitcher.go_to_map("res://Szene/Maps/startdorf.tscn", "start")
 	pass
 

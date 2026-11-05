@@ -21,6 +21,8 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+GameState="*res://Scripts/Core/game_state.gd"
+SaveManager="*res://Scripts/Core/save_manager.gd"
 AudioPlayer="*res://Szene/Music/audio_player.tscn"
 ConfigManager="*res://Scripts/ConfigManager.gd"
 
