@@ -23,6 +23,7 @@ config/icon="res://icon.svg"
 
 AudioPlayer="*res://Szene/Music/audio_player.tscn"
 ConfigManager="*res://Scripts/ConfigManager.gd"
+DialogueBox="*res://Scripts/UI/dialogue_box.gd"
 
 [dotnet]
 

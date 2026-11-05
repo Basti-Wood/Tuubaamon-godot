@@ -1,3 +1,32 @@
 [gd_scene format=3 uid="uid://mkhchdn65l7x"]
 
-[node name="TemplateHuman" type="Node3D" unique_id=1515397357]
+[ext_resource type="Script" uid="uid://bpc28lv1eka1s" path="res://Scripts/Overworld/npc.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://swn4gptn58lk" path="res://Assets/DEBUG/DEBUG_sprite.png" id="2_tex"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_1"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_tex")
+}],
+"loop": true,
+"name": &"idle_down",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(14, 14)
+
+[node name="TemplateHuman" type="CharacterBody2D"]
+script = ExtResource("1_script")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(0.08, 0.08)
+sprite_frames = SubResource("SpriteFrames_1")
+animation = &"idle_down"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="SightRay" type="RayCast2D" parent="."]
+target_position = Vector2(0, 64)

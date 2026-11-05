@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://bcd6ekoqqn0ks" path="res://Szene/Player/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://mkhchdn65l7x" path="res://Szene/NPCs/Human/Template_Human.tscn" id="2_npc"]
+
+[node name="SpielerNpcTest" type="Node2D"]
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(24, 24)
+
+[node name="Oma" parent="." instance=ExtResource("2_npc")]
+position = Vector2(56, 24)
+npc_name = "Oma"
+dialogue_lines = Array[String](["Hallo Tuubaa!", "Pass auf dich auf da draußen."])
+
+[node name="Trainer" parent="." instance=ExtResource("2_npc")]
+position = Vector2(88, 104)
+npc_name = "Mod Kevin"
+dialogue_lines = Array[String](["Halt! Ömer schickt mich!", "Kämpf gegen mich!"])
+facing = Vector2(-1, 0)
+is_trainer = true
